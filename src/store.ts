@@ -1,10 +1,34 @@
 import { createStore } from "redux";
 import { Dispatch } from "react";
 
-type Playlist = {
+export type Playlist = {
   id: string,
   name: string
 };
+
+export type Artist = {
+  id: string,
+  name: string
+};
+
+export type Track = {
+  id: string,
+  name: string,
+  artists: ReadonlyArray<Artist>,
+  duration_ms: number,
+  acousticness: number,
+  danceability: number,
+  energy: number,
+  instrumentalness: number,
+  key: number,
+  liveness: number,
+  loudness: number,
+  mode: number,
+  speechiness: number,
+  tempo: number,
+  time_signature: number,
+  valence: number
+}
 
 export type ApplicationState = {
   credentials?: {
@@ -12,7 +36,8 @@ export type ApplicationState = {
     refreshToken: string
   },
   refreshingToken: boolean,
-  playlists: ReadonlyArray<Playlist>
+  playlists: ReadonlyArray<Playlist>,
+  tracks: ReadonlyArray<Track>
 };
 
 type Action = {
@@ -34,11 +59,16 @@ type Action = {
 | {
   type: "SET_PLAYLISTS",
   value: ReadonlyArray<Playlist>
+}
+| {
+  type: "SET_TRACKS",
+  value: ReadonlyArray<Track>
 };
 
 const INITIAL_STATE: ApplicationState = {
   refreshingToken: false,
-  playlists: []
+  playlists: [],
+  tracks: []
 };
 
 function reducer(state: ApplicationState = INITIAL_STATE, action: Action): ApplicationState {
@@ -67,6 +97,11 @@ function reducer(state: ApplicationState = INITIAL_STATE, action: Action): Appli
       return {
         ...state,
         playlists: action.value
+      };
+    case "SET_TRACKS":
+      return {
+        ...state,
+        tracks: action.value
       };
     default:
       return state;

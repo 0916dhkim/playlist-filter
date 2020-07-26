@@ -1,6 +1,6 @@
 import Spotify from "spotify-web-api-js";
 import axios from "axios";
-import { store } from "./store";
+import { store, Track } from "./store";
 import { TOKEN_ENDPOINT, CLIENT_ID } from "./config";
 const spotify = new Spotify();
 
@@ -50,18 +50,57 @@ async function requestRefresh(refreshToken: string) {
 function getAccessToken() {
   const { credentials } = store.getState();
   if (!credentials) {
-    return undefined;
+    throw new Error("Failed to get access token.");
   }
   const { accessToken, refreshToken } = credentials;
   requestRefresh(refreshToken);
   return accessToken;
 }
 
-export function getUserPlaylists() {
-  const token = getAccessToken();
-  if (!token) {
-    throw new Error("Failed to get access token.");
+function splitIntoBatches<T>(arr: ReadonlyArray<T>, batchSize: number = 30): ReadonlyArray<ReadonlyArray<T>> {
+  let i = 0;
+  const ret: Array<Array<T>> = [];
+  while (arr.length > i) {
+    ret.push(arr.slice(i, i + batchSize));
+    i += batchSize;
   }
-  spotify.setAccessToken(token);
+  return ret;
+}
+
+export function getUserPlaylists() {
+  spotify.setAccessToken(getAccessToken());
   return spotify.getUserPlaylists();
+}
+
+export async function getPlaylistTracks(playlistId: string): Promise<ReadonlyArray<Track>> {
+  spotify.setAccessToken(getAccessToken());
+  const trackIds = (await spotify.getPlaylistTracks(playlistId)).items.map(i => i.track.id);
+  console.log(trackIds.length);
+  const trackMap = new Map<string, Track>();
+  const batches = splitIntoBatches(trackIds);
+  await Promise.all(trackIds.map(async id => {
+    try {
+      const track = await spotify.getTrack(id);
+      const features = await spotify.getAudioFeaturesForTrack(id);
+      trackMap.set(id, {...track, ...features});
+    } catch (e) {
+      console.error(e);
+      console.log(`Failed to fetch track ${id}. Skipping...`);
+    }
+  }));
+  await Promise.all(batches.map(async batch => {
+    try {
+      const { tracks } = await spotify.getTracks([...batch]);
+      const { audio_features } = await spotify.getAudioFeaturesForTracks([...batch]);
+      for (let i = 0; i < tracks.length; i++) {
+        if (tracks[i]) {
+          trackMap.set(tracks[i].id, {...tracks[i], ...audio_features[i]});
+        }
+      }
+    } catch (e) {
+      console.log(`Failed to fetch batch ${batch}. Skipping...`);
+    }
+    return;
+  }));
+  return Array.from(trackMap.values());
 }
