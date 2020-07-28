@@ -37,7 +37,11 @@ export type ApplicationState = {
   },
   refreshingToken: boolean,
   playlists: ReadonlyArray<Playlist>,
-  tracks: ReadonlyArray<Track>
+  tracks: ReadonlyArray<Track>,
+  tempoRange: {
+    min: number,
+    max: number
+  }
 };
 
 type Action = {
@@ -63,12 +67,21 @@ type Action = {
 | {
   type: "SET_TRACKS",
   value: ReadonlyArray<Track>
+}
+| {
+  type: "SET_MIN_TEMPO",
+  value: number
+}
+| {
+  type: "SET_MAX_TEMPO",
+  value: number
 };
 
 const INITIAL_STATE: ApplicationState = {
   refreshingToken: false,
   playlists: [],
-  tracks: []
+  tracks: [],
+  tempoRange: { min: 0, max: 300 }
 };
 
 function reducer(state: ApplicationState = INITIAL_STATE, action: Action): ApplicationState {
@@ -102,6 +115,22 @@ function reducer(state: ApplicationState = INITIAL_STATE, action: Action): Appli
       return {
         ...state,
         tracks: action.value
+      };
+    case "SET_MIN_TEMPO":
+      return {
+        ...state,
+        tempoRange: {
+          ...state.tempoRange,
+          min: action.value
+        }
+      };
+    case "SET_MAX_TEMPO":
+      return {
+        ...state,
+        tempoRange: {
+          ...state.tempoRange,
+          max: action.value
+        }
       };
     default:
       return state;

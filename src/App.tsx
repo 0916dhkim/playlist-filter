@@ -1,5 +1,6 @@
 import React from 'react';
 import Auth from "./Auth";
+import Controls from "./Controls";
 import Playlists from "./Playlists";
 import Tracks from './Tracks';
 import './App.css';
@@ -12,6 +13,7 @@ function App() {
     <div>
       <h1>Spotify Filter</h1>
       <Auth />
+      {credentials && <Controls />}
       {credentials && <Playlists />}
       {credentials && <Tracks />}
     </div>

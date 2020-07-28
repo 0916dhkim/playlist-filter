@@ -1,9 +1,15 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { ApplicationState } from "./store";
 
 export default function() {
   const tracks = useSelector((state: ApplicationState) => state.tracks);
+  const minTempo = useSelector((state: ApplicationState) => state.tempoRange.min);
+  const maxTempo = useSelector((state: ApplicationState) => state.tempoRange.max);
+
+  const filteredTracks = useMemo(() => {
+    return tracks.filter(track => track.tempo >= minTempo && track.tempo <= maxTempo);
+  }, [tracks, minTempo, maxTempo]);
   return (
     <div>
       <h3>Tracks</h3>
@@ -17,7 +23,7 @@ export default function() {
           </tr>
         </thead>
         <tbody>
-          {tracks.map(track => (
+          {filteredTracks.map(track => (
             <tr key={track.id}>
               <td>{track.id}</td>
               <td>{track.name}</td>
