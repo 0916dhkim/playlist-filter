@@ -9,10 +9,6 @@ const spotify = new Spotify();
  * @param refreshToken Spotify refresh token
  */
 async function requestRefresh(refreshToken: string) {
-  const { refreshingToken } = store.getState();
-  if (refreshingToken) {
-    return;
-  }
   store.dispatch({ type: "BEGIN_TOKEN_REFRESH" });
   try {
     const body = new URLSearchParams();
@@ -35,7 +31,7 @@ async function requestRefresh(refreshToken: string) {
     localStorage.setItem("access-token", nextAccessToken);
     localStorage.setItem("refresh-token", nextRefreshToken);
     store.dispatch({
-      type: "GET_CREDENTIALS",
+      type: "SIGN_IN",
       value: { accessToken: nextAccessToken, refreshToken: nextRefreshToken }
     });
   } catch (e) {
@@ -48,12 +44,15 @@ async function requestRefresh(refreshToken: string) {
  * Get access token, and start token refresh.
  */
 function getAccessToken() {
-  const { credentials } = store.getState();
-  if (!credentials) {
-    throw new Error("Failed to get access token.");
+  const state = store.getState();
+  if (!state.signedIn) {
+    throw new Error("Cannot get access token if signed out.");
   }
-  const { accessToken, refreshToken } = credentials;
-  requestRefresh(refreshToken);
+  const { accessToken, refreshToken, tokenIsRefreshing } = state;
+  if (!tokenIsRefreshing) {
+    // Start refreshing tokens unless already refreshing.
+    requestRefresh(refreshToken);
+  }
   return accessToken;
 }
 

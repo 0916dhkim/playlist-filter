@@ -30,22 +30,24 @@ export type Track = {
   valence: number
 }
 
-export type ApplicationState = {
-  credentials?: {
-    accessToken: string,
-    refreshToken: string
-  },
-  refreshingToken: boolean,
-  playlists: ReadonlyArray<Playlist>,
-  tracks: ReadonlyArray<Track>,
-  tempoRange: {
-    min: number,
-    max: number
-  }
+export type SignedOutState = {
+  signedIn: false
 };
 
+export type SignedInState = {
+  signedIn: true
+  accessToken: string,
+  refreshToken: string,
+  tokenIsRefreshing: boolean,
+  playlists: ReadonlyArray<Playlist>,
+  tracks: ReadonlyArray<Track>,
+  tempoRange: [number, number]
+};
+
+export type ApplicationState = SignedInState | SignedOutState;
+
 type Action = {
-  type: "GET_CREDENTIALS",
+  type: "SIGN_IN",
   value: {
     accessToken: string,
     refreshToken: string
@@ -78,33 +80,22 @@ type Action = {
 };
 
 const INITIAL_STATE: ApplicationState = {
-  refreshingToken: false,
-  playlists: [],
-  tracks: [],
-  tempoRange: { min: 0, max: 300 }
+  signedIn: false
 };
 
-function reducer(state: ApplicationState = INITIAL_STATE, action: Action): ApplicationState {
+function signedInReducer(state: SignedInState, action: Action): ApplicationState {
   switch (action.type) {
-    case "GET_CREDENTIALS":
-      return {
-        ...state,
-        credentials: action.value
-      };
     case "SIGN_OUT":
-      return {
-        ...state,
-        credentials: undefined
-      };
+      return { signedIn: false };
     case "BEGIN_TOKEN_REFRESH":
       return {
         ...state,
-        refreshingToken: true
+        tokenIsRefreshing: true
       };
     case "END_TOKEN_REFRESH":
       return {
         ...state,
-        refreshingToken: false
+        tokenIsRefreshing: false
       };
     case "SET_PLAYLISTS":
       return {
@@ -119,22 +110,39 @@ function reducer(state: ApplicationState = INITIAL_STATE, action: Action): Appli
     case "SET_MIN_TEMPO":
       return {
         ...state,
-        tempoRange: {
-          ...state.tempoRange,
-          min: action.value
-        }
+        tempoRange: [action.value, state.tempoRange[1]]
       };
     case "SET_MAX_TEMPO":
       return {
         ...state,
-        tempoRange: {
-          ...state.tempoRange,
-          max: action.value
-        }
+        tempoRange: [state.tempoRange[0], action.value]
       };
     default:
       return state;
   }
+}
+
+function signedOutReducer(state: SignedOutState, action: Action): ApplicationState {
+  switch (action.type) {
+    case "SIGN_IN":
+      return {
+        signedIn: true,
+        playlists: [],
+        tracks: [],
+        tempoRange: [0, 300],
+        tokenIsRefreshing: false,
+        ...action.value
+      }
+    default:
+      return state;
+  }
+}
+
+function reducer(state: ApplicationState = INITIAL_STATE, action: Action): ApplicationState {
+  if (state.signedIn) {
+    return signedInReducer(state, action);
+  }
+  return signedOutReducer(state, action);
 }
 
 export const store = createStore(reducer);

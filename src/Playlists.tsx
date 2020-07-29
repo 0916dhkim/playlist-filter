@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import { getUserPlaylists, getPlaylistTracks } from "./spotify";
 import { useSelector, useDispatch } from "react-redux";
-import { ApplicationState, ApplicationDispatch } from "./store";
+import { ApplicationDispatch, SignedInState } from "./store";
 
 export default function() {
-  const playlists = useSelector((state: ApplicationState) => state.playlists);
+  const playlists = useSelector((state: SignedInState) => state.playlists);
   const dispatch = useDispatch<ApplicationDispatch>();
   useEffect(() => {
     getUserPlaylists().then(res => {

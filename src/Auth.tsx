@@ -109,7 +109,7 @@ function checkSession(dispatch: ApplicationDispatch) {
   if (accessToken && refreshToken) {
     dispatch(
       {
-        type: "GET_CREDENTIALS",
+        type: "SIGN_IN",
         value: { accessToken, refreshToken }
       }
     );
@@ -117,7 +117,7 @@ function checkSession(dispatch: ApplicationDispatch) {
 }
 
 export default function() {
-  const credentials = useSelector((state: ApplicationState) => state.credentials);
+  const signedIn = useSelector((state: ApplicationState) => state.signedIn);
   const dispatch = useDispatch<ApplicationDispatch>();
 
 
@@ -128,7 +128,7 @@ export default function() {
   }, [dispatch]);
   return (
     <div>
-      {credentials
+      {signedIn
         ? <button onClick={() => signOut(dispatch)}>Sign Out</button>
         : <button onClick={signIn}>Sign In</button>
       }

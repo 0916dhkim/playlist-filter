@@ -8,14 +8,18 @@ import { useSelector } from 'react-redux';
 import { ApplicationState } from './store';
 
 function App() {
-  const credentials = useSelector((state: ApplicationState) => state.credentials);
+  const signedIn = useSelector((state: ApplicationState) => state.signedIn);
   return (
     <div>
       <h1>Spotify Filter</h1>
       <Auth />
-      {credentials && <Controls />}
-      {credentials && <Playlists />}
-      {credentials && <Tracks />}
+      {signedIn && (
+        <div>
+          <Controls />
+          <Playlists />
+          <Tracks />
+        </div>
+      )}
     </div>
   );
 }
