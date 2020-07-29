@@ -2,19 +2,29 @@ import React, { useEffect } from "react";
 import { getUserPlaylists, getPlaylistTracks } from "./spotify";
 import { useSelector, useDispatch } from "react-redux";
 import { ApplicationDispatch, SignedInState } from "./store";
+import useAccessToken from "./useAccessToken";
 
 export default function() {
+  const accessToken = useAccessToken();
   const playlists = useSelector((state: SignedInState) => state.playlists);
   const dispatch = useDispatch<ApplicationDispatch>();
   useEffect(() => {
-    getUserPlaylists().then(res => {
-      dispatch({ type: "SET_PLAYLISTS", value: res.items });
+    accessToken.then(t => getUserPlaylists(t)).then(playlists => {
+      dispatch({
+        type: "SET_PLAYLISTS",
+        value: playlists
+      });
+    }).catch(e => {
+      console.error(`Failed to fetch user playlists: ${e}`);
     });
-  }, [dispatch]);
+  }, [accessToken, dispatch]);
 
   async function selectPlaylist(id: string) {
-    const tracks = await getPlaylistTracks(id);
-    dispatch({ type: "SET_TRACKS", value: tracks });
+    const tracks = await getPlaylistTracks(id, await accessToken);
+    dispatch({
+      type: "SET_TRACKS",
+      value: tracks
+    });
   }
 
   return (

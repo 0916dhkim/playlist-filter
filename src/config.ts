@@ -14,6 +14,11 @@ export const AUTHORIZATION_ENDPOINT = "https://accounts.spotify.com/authorize";
 export const TOKEN_ENDPOINT = "https://accounts.spotify.com/api/token";
 
 /**
+ * Spotify API root.
+ */
+export const API_ROOT = "https://api.spotify.com/v1";
+
+/**
  * Space separated list of scopes.
  */
 export const REQUESTED_SCOPES = "playlist-read-private"

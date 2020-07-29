@@ -93,6 +93,7 @@ async function handleAuthRedirect() {
       }
     ).then(res => {
       localStorage.setItem("access-token", res.data.access_token);
+      localStorage.setItem("access-token-expiry", (Date.now() + 1000 * parseFloat(res.data.expires_in)).toString());
       localStorage.setItem("refresh-token", res.data.refresh_token);
     }).catch(e => {
       console.error(e);
@@ -106,11 +107,12 @@ async function handleAuthRedirect() {
 function checkSession(dispatch: ApplicationDispatch) {
   const accessToken = localStorage.getItem("access-token");
   const refreshToken = localStorage.getItem("refresh-token");
-  if (accessToken && refreshToken) {
+  const accessTokenExpiry = parseFloat(localStorage.getItem("access-token-expiry") || "");
+  if (accessToken && refreshToken && accessTokenExpiry) {
     dispatch(
       {
         type: "SIGN_IN",
-        value: { accessToken, refreshToken }
+        value: { accessToken, accessTokenExpiry, refreshToken }
       }
     );
   }

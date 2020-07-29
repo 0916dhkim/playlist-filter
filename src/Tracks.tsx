@@ -23,8 +23,8 @@ export default function() {
           </tr>
         </thead>
         <tbody>
-          {filteredTracks.map(track => (
-            <tr key={track.id}>
+          {filteredTracks.map((track, i) => (
+            <tr key={i}>
               <td>{track.id}</td>
               <td>{track.name}</td>
               <td>{track.tempo}</td>
