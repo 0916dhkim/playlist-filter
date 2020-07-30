@@ -1,6 +1,6 @@
 import axios from "axios";
+import { TrackInfo } from "./store";
 import { API_ROOT } from "./config";
-import { Track } from "./store";
 import {
   Paging,
   PrivateUser,
@@ -72,11 +72,11 @@ export async function getUserPlaylists(accessToken: string): Promise<Playlist[]>
   return requestAllPages(url, accessToken);
 }
 
-export async function getPlaylistTracks(playlistId: string, accessToken: string): Promise<Array<Track>> {
+export async function getPlaylistTracks(playlistId: string, accessToken: string): Promise<Array<TrackInfo>> {
   const url = `${API_ROOT}/playlists/${playlistId}/tracks`;
   const tracks = await requestAllPages<PlaylistTrack>(url, accessToken);
   const batches = splitIntoBatches(tracks, 40);
-  const ret: Array<Track> = [];
+  const ret: Array<TrackInfo> = [];
 
   for (let batch of batches) {
     const ids = batch.map(t => t.track.id);

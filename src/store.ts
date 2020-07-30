@@ -1,34 +1,13 @@
 import { createStore } from "redux";
 import { Dispatch } from "react";
+import {
+  Playlist,
+  FullTrack,
+  AudioFeatures
+} from "./spotify_types";
 
-export type Playlist = {
-  id: string,
-  name: string
-};
-
-export type Artist = {
-  id: string,
-  name: string
-};
-
-export type Track = {
-  id: string,
-  name: string,
-  artists: ReadonlyArray<Artist>,
-  duration_ms: number,
-  acousticness: number,
-  danceability: number,
-  energy: number,
-  instrumentalness: number,
-  key: number,
-  liveness: number,
-  loudness: number,
-  mode: number,
-  speechiness: number,
-  tempo: number,
-  time_signature: number,
-  valence: number
-}
+type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
+export type TrackInfo = Omit<FullTrack, "type"> & Omit<AudioFeatures, "type">;
 
 export type SignedOutState = {
   signedIn: false
@@ -40,7 +19,7 @@ export type SignedInState = {
   accessTokenExpiry: number,
   refreshToken: string,
   playlists: ReadonlyArray<Playlist>,
-  tracks: ReadonlyArray<Track>,
+  tracks: ReadonlyArray<TrackInfo>,
   tempoRange: [number, number]
 };
 
@@ -63,7 +42,7 @@ type Action = {
 }
 | {
   type: "SET_TRACKS",
-  value: ReadonlyArray<Track>
+  value: ReadonlyArray<TrackInfo>
 }
 | {
   type: "SET_MIN_TEMPO",
