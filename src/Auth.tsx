@@ -45,7 +45,7 @@ async function signIn() {
   url.searchParams.append("code_challenge_method", "S256");
 
   // Redirect to auth page.
-  window.location.href = url.toString();
+  window.location.assign(url.toString());
 }
 
 /**
