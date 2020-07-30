@@ -38,9 +38,6 @@ type Action = {
   type: "SIGN_OUT"
 }
 | {
-  type: "START_TOKEN_REFRESH"
-}
-| {
   type: "SET_PLAYLISTS",
   value: ReadonlyArray<Playlist>
 }
@@ -65,11 +62,6 @@ function signedInReducer(state: SignedInState, action: Action): ApplicationState
   switch (action.type) {
     case "SIGN_OUT":
       return { signedIn: false };
-    case "START_TOKEN_REFRESH":
-      return {
-        ...state,
-        loadingAccessToken: true
-      };
     case "SET_PLAYLISTS":
       return {
         ...state,

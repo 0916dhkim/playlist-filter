@@ -163,13 +163,13 @@ export default function() {
     checkSession(dispatch);
   }, [dispatch]);
 
-  // Check access token expiry every tick.
+  // Set timer for access token expiry.
   useEffect(() => {
-    if (accessTokenExpiry && refreshToken && accessTokenExpiry < Date.now() - 60 * 1000) {
-      // Less than 1 minute left to expire.
-      // Start refreshing.
-      dispatch({ type: "START_TOKEN_REFRESH" });
-      requestRefresh(refreshToken).then(res => {
+    if (accessTokenExpiry && refreshToken) {
+      const timer = setTimeout(() => {
+        // 1 minute left for access token expiration.
+        // Start refreshing.
+        requestRefresh(refreshToken).then(res => {
           // Token refresh successful.
           dispatch({
             type: "SIGN_IN",
@@ -180,9 +180,12 @@ export default function() {
           console.error(`Failed to refresh access token: ${e}`);
           // Sign out.
           dispatch({ type: "SIGN_OUT" });
-        })
+        });
+      }, Math.min(0, accessTokenExpiry - Date.now() - 60 * 1000))
+
+      return () => clearTimeout(timer);
     }
-  });
+  }, [accessTokenExpiry, refreshToken, dispatch]);
 
   return (
     <div>
