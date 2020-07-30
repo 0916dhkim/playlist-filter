@@ -2,14 +2,13 @@ import React, { useEffect } from "react";
 import { getUserPlaylists, getPlaylistTracks } from "./spotify";
 import { useSelector, useDispatch } from "react-redux";
 import { ApplicationDispatch, SignedInState } from "./store";
-import useAccessToken from "./useAccessToken";
 
 export default function() {
-  const accessToken = useAccessToken();
+  const accessToken = useSelector((state: SignedInState) => state.accessToken);
   const playlists = useSelector((state: SignedInState) => state.playlists);
   const dispatch = useDispatch<ApplicationDispatch>();
   useEffect(() => {
-    accessToken.then(t => getUserPlaylists(t)).then(playlists => {
+    getUserPlaylists(accessToken).then(playlists => {
       dispatch({
         type: "SET_PLAYLISTS",
         value: playlists
@@ -20,7 +19,7 @@ export default function() {
   }, [accessToken, dispatch]);
 
   async function selectPlaylist(id: string) {
-    const tracks = await getPlaylistTracks(id, await accessToken);
+    const tracks = await getPlaylistTracks(id, accessToken);
     dispatch({
       type: "SET_TRACKS",
       value: tracks

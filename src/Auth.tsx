@@ -104,6 +104,39 @@ async function handleAuthRedirect() {
   }
 }
 
+/**
+ * Asynchronously request new access token.
+ * @param refreshToken Spotify refresh token
+ */
+async function requestRefresh(refreshToken: string) {
+  const body = new URLSearchParams();
+  body.append("grant_type", "refresh_token");
+  body.append("refresh_token", refreshToken);
+  body.append("client_id", CLIENT_ID);
+  const response = await axios.post(
+    TOKEN_ENDPOINT,
+    body.toString(),
+    {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+      }
+    }
+  );
+  const [nextAccessToken, nextRefreshToken, nextTtl] = [response.data.access_token, response.data.refresh_token, response.data.expires_in];
+  const nextAccessTokenExpiry = Date.now() + 1000 * parseFloat(nextTtl);
+  if (typeof nextAccessToken !== "string" || typeof nextRefreshToken !== "string" || isNaN(nextAccessTokenExpiry)) {
+    throw new Error("Invalid response from auth server.");
+  }
+  localStorage.setItem("access-token", nextAccessToken);
+  localStorage.setItem("access-token-expiry", nextAccessTokenExpiry.toString());
+  localStorage.setItem("refresh-token", nextRefreshToken);
+  return {
+    accessToken: nextAccessToken,
+    accessTokenExpiry: nextAccessTokenExpiry,
+    refreshToken: nextRefreshToken
+  };
+}
+
 function checkSession(dispatch: ApplicationDispatch) {
   const accessToken = localStorage.getItem("access-token");
   const refreshToken = localStorage.getItem("refresh-token");
@@ -120,14 +153,37 @@ function checkSession(dispatch: ApplicationDispatch) {
 
 export default function() {
   const signedIn = useSelector((state: ApplicationState) => state.signedIn);
+  const accessTokenExpiry = useSelector((state: ApplicationState) => state.signedIn ? state.accessTokenExpiry : null);
+  const refreshToken = useSelector((state: ApplicationState) => state.signedIn ? state.refreshToken : null);
   const dispatch = useDispatch<ApplicationDispatch>();
-
 
   // On load.
   useEffect(() => {
     handleAuthRedirect();
     checkSession(dispatch);
   }, [dispatch]);
+
+  // Check access token expiry every tick.
+  useEffect(() => {
+    if (accessTokenExpiry && refreshToken && accessTokenExpiry < Date.now() - 60 * 1000) {
+      // Less than 1 minute left to expire.
+      // Start refreshing.
+      dispatch({ type: "START_TOKEN_REFRESH" });
+      requestRefresh(refreshToken).then(res => {
+          // Token refresh successful.
+          dispatch({
+            type: "SIGN_IN",
+            value: res
+          });
+        }).catch(e => {
+          // Failed to refresh token.
+          console.error(`Failed to refresh access token: ${e}`);
+          // Sign out.
+          dispatch({ type: "SIGN_OUT" });
+        })
+    }
+  });
+
   return (
     <div>
       {signedIn

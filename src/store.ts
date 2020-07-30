@@ -18,6 +18,7 @@ export type SignedInState = {
   accessToken: string,
   accessTokenExpiry: number,
   refreshToken: string,
+  loadingAccessToken: boolean,
   playlists: ReadonlyArray<Playlist>,
   tracks: ReadonlyArray<TrackInfo>,
   tempoRange: [number, number]
@@ -35,6 +36,9 @@ type Action = {
 }
 | {
   type: "SIGN_OUT"
+}
+| {
+  type: "START_TOKEN_REFRESH"
 }
 | {
   type: "SET_PLAYLISTS",
@@ -61,6 +65,11 @@ function signedInReducer(state: SignedInState, action: Action): ApplicationState
   switch (action.type) {
     case "SIGN_OUT":
       return { signedIn: false };
+    case "START_TOKEN_REFRESH":
+      return {
+        ...state,
+        loadingAccessToken: true
+      };
     case "SET_PLAYLISTS":
       return {
         ...state,
@@ -91,6 +100,7 @@ function signedOutReducer(state: SignedOutState, action: Action): ApplicationSta
     case "SIGN_IN":
       return {
         signedIn: true,
+        loadingAccessToken: false,
         playlists: [],
         tracks: [],
         tempoRange: [0, 300],
