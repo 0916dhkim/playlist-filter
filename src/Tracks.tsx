@@ -16,19 +16,31 @@ export default function() {
       <table>
         <thead>
           <tr>
-            <th>ID</th>
             <th>Title</th>
             <th>Tempo</th>
+            <th>Acousticness</th>
             <th>Danceability</th>
+            <th>Energy</th>
+            <th>Instrumentalness</th>
+            <th>Liveness</th>
+            <th>Loudness</th>
+            <th>Speechiness</th>
+            <th>Valence</th>
           </tr>
         </thead>
         <tbody>
           {filteredTracks.map((track, i) => (
             <tr key={i}>
-              <td>{track.id}</td>
               <td>{track.name}</td>
               <td>{track.tempo}</td>
+              <td>{track.acousticness}</td>
               <td>{track.danceability}</td>
+              <td>{track.energy}</td>
+              <td>{track.instrumentalness}</td>
+              <td>{track.liveness}</td>
+              <td>{track.loudness}</td>
+              <td>{track.speechiness}</td>
+              <td>{track.valence}</td>
             </tr>
           ))}
         </tbody>
