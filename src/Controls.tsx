@@ -8,6 +8,14 @@ export  default function() {
   const dispatch = useDispatch<ApplicationDispatch>();
 
   /**
+   * Minimum tempo amongst tracks.
+   */
+  const minTrackTempo = useMemo(
+    () => Math.floor(tracks.map(track => track.tempo).reduce((a, b) => Math.min(a, b), Infinity)),
+    [tracks]
+  );
+
+  /**
    * Maximum tempo amongst tracks.
    */
   const maxTrackTempo = useMemo(
@@ -17,15 +25,15 @@ export  default function() {
 
   // Reset controls when tracks are updated.
   useEffect(() => {
-    dispatch({ type: "SET_MIN_TEMPO", value: 0 });
+    dispatch({ type: "SET_MIN_TEMPO", value: minTrackTempo });
     dispatch({ type: "SET_MAX_TEMPO", value: maxTrackTempo });
-  }, [maxTrackTempo, dispatch])
+  }, [minTrackTempo, maxTrackTempo, dispatch])
 
   return (
     <div>
       <h3>Controls</h3>
       <span>Min Tempo</span>
-      <input type="range" min={0} max={maxTrackTempo} step={1} value={tempoRange[0]} onChange={(e) => {
+      <input type="range" min={minTrackTempo} max={maxTrackTempo} step={1} value={tempoRange[0]} onChange={(e) => {
         let parsed = parseFloat(e.target.value);
         if (Number.isNaN(parsed)) {
           parsed = 0;
@@ -38,7 +46,7 @@ export  default function() {
       <span>{tempoRange[0]}</span>
       <br />
       <span>Max Tempo</span>
-      <input type="range" min={0} max={maxTrackTempo} step={1} value={tempoRange[1]} onChange={(e) => {
+      <input type="range" min={minTrackTempo} max={maxTrackTempo} step={1} value={tempoRange[1]} onChange={(e) => {
         let parsed = parseFloat(e.target.value);
         if (Number.isNaN(parsed)) {
           parsed = 0;
