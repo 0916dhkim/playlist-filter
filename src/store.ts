@@ -18,8 +18,9 @@ export type SignedInState = {
   accessToken: string,
   accessTokenExpiry: number,
   refreshToken: string,
-  loadingAccessToken: boolean,
   playlists: ReadonlyArray<Playlist>,
+  selectedPlaylistId?: string,
+  loadingTracks: boolean,
   tracks: ReadonlyArray<TrackInfo>,
   tempoRange: [number, number]
 };
@@ -40,6 +41,10 @@ type Action = {
 | {
   type: "SET_PLAYLISTS",
   value: ReadonlyArray<Playlist>
+}
+| {
+  type: "START_FETCHING_TRACKS"
+  playlistId: string
 }
 | {
   type: "SET_TRACKS",
@@ -67,10 +72,17 @@ function signedInReducer(state: SignedInState, action: Action): ApplicationState
         ...state,
         playlists: action.value
       };
+    case "START_FETCHING_TRACKS":
+      return {
+        ...state,
+        selectedPlaylistId: action.playlistId,
+        loadingTracks: true
+      };
     case "SET_TRACKS":
       return {
         ...state,
-        tracks: action.value
+        tracks: action.value,
+        loadingTracks: false
       };
     case "SET_MIN_TEMPO":
       return {
@@ -92,8 +104,8 @@ function signedOutReducer(state: SignedOutState, action: Action): ApplicationSta
     case "SIGN_IN":
       return {
         signedIn: true,
-        loadingAccessToken: false,
         playlists: [],
+        loadingTracks: false,
         tracks: [],
         tempoRange: [0, 300],
         ...action.value
