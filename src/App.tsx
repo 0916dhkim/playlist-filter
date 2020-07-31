@@ -9,15 +9,16 @@ import { ApplicationState } from './store';
 
 function App() {
   const signedIn = useSelector((state: ApplicationState) => state.signedIn);
+  const tracks = useSelector((state: ApplicationState) => state.signedIn ? state.tracks : null);
   return (
     <div>
       <h1>Spotify Filter</h1>
       <Auth />
       {signedIn && (
         <div>
-          <Controls />
+          {tracks && tracks.length > 0 && <Controls />}
           <Playlists />
-          <Tracks />
+          {tracks && tracks.length > 0 && <Tracks />}
         </div>
       )}
     </div>
