@@ -5,22 +5,30 @@ import Playlists from "./Playlists";
 import Tracks from './Tracks';
 import './App.css';
 import { useSelector } from 'react-redux';
-import { ApplicationState } from './store';
+import { ApplicationState, SignedInState } from './store';
+
+function SignedInApp() {
+  const tracks = useSelector((state: SignedInState) => state.tracks);
+  const loadingTracks = useSelector((state: SignedInState) => state.loadingTracks);
+  return (
+    <div>
+      {tracks.length > 0 && <Controls />}
+      <Playlists />
+      {loadingTracks
+        ? <p>Loading...</p>
+        : <Tracks />
+      }
+    </div>
+  );
+}
 
 function App() {
   const signedIn = useSelector((state: ApplicationState) => state.signedIn);
-  const tracks = useSelector((state: ApplicationState) => state.signedIn ? state.tracks : null);
   return (
     <div>
       <h1>Spotify Filter</h1>
       <Auth />
-      {signedIn && (
-        <div>
-          {tracks && tracks.length > 0 && <Controls />}
-          <Playlists />
-          {tracks && tracks.length > 0 && <Tracks />}
-        </div>
-      )}
+      {signedIn && <SignedInApp />}
     </div>
   );
 }
