@@ -3,6 +3,7 @@ import axios from "axios";
 import { getUserPlaylists, getPlaylistTracks } from "./spotify";
 import { useSelector, useDispatch } from "react-redux";
 import { ApplicationDispatch, SignedInState } from "./store";
+import style from "./Playlists.module.css";
 
 export default function() {
   const accessToken = useSelector((state: SignedInState) => state.accessToken);
@@ -51,16 +52,17 @@ export default function() {
   return (
     <div>
       <h3>Playlists</h3>
-      <table>
-        <tbody>
-          {playlists.map(playlist => (
-            <tr key={playlist.id} onClick={() => selectPlaylist(playlist.id)}>
-              <td>{playlist.id}</td>
-              <td>{playlist.name}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className={style.container}>
+        {playlists.map(playlist => (
+          <div
+            key={playlist.id}
+            className={style.item}
+            onClick={() => selectPlaylist(playlist.id)}
+          >
+            {playlist.name}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
