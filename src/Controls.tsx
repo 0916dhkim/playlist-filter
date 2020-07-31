@@ -1,6 +1,8 @@
 import React, { useMemo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ApplicationDispatch, SignedInState } from "./store";
+import style from "./Controls.module.css";
+
 
 export  default function() {
   const tempoRange = useSelector((state: SignedInState) => state.tempoRange);
@@ -32,31 +34,33 @@ export  default function() {
   return (
     <div>
       <h3>Controls</h3>
-      <span>Min Tempo</span>
-      <input type="range" min={minTrackTempo} max={maxTrackTempo} step={1} value={tempoRange[0]} onChange={(e) => {
-        let parsed = parseFloat(e.target.value);
-        if (Number.isNaN(parsed)) {
-          parsed = 0;
-        }
-        dispatch({
-          type: "SET_MIN_TEMPO",
-          value: parsed
-        });
-      }} />
-      <span>{tempoRange[0]}</span>
-      <br />
-      <span>Max Tempo</span>
-      <input type="range" min={minTrackTempo} max={maxTrackTempo} step={1} value={tempoRange[1]} onChange={(e) => {
-        let parsed = parseFloat(e.target.value);
-        if (Number.isNaN(parsed)) {
-          parsed = 0;
-        }
-        dispatch({
-          type: "SET_MAX_TEMPO",
-          value: parsed
-        });
-      }} />
-      <span>{tempoRange[1]}</span>
+      <fieldset className={style.fieldset}>
+        <legend>Tempo (BPM)</legend>
+        <div className={style.group}>
+          <div>Min ({tempoRange[0]})</div>
+          <input type="range" min={minTrackTempo} max={maxTrackTempo} step={1} value={tempoRange[0]} onChange={(e) => {
+            let parsed = parseFloat(e.target.value);
+            if (Number.isNaN(parsed)) {
+              parsed = 0;
+            }
+            dispatch({
+              type: "SET_MIN_TEMPO",
+              value: parsed
+            });
+          }} />
+          <div>Max ({tempoRange[1]})</div>
+          <input type="range" min={minTrackTempo} max={maxTrackTempo} step={1} value={tempoRange[1]} onChange={(e) => {
+            let parsed = parseFloat(e.target.value);
+            if (Number.isNaN(parsed)) {
+              parsed = 0;
+            }
+            dispatch({
+              type: "SET_MAX_TEMPO",
+              value: parsed
+            });
+          }} />
+        </div>
+      </fieldset>
     </div>
   );
 }
