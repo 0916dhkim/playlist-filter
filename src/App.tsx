@@ -1,8 +1,8 @@
 import React from 'react';
-import Auth from "./Auth";
-import Controls from "./Controls";
-import Playlists from "./Playlists";
-import Tracks from './Tracks';
+import Auth from "./components/Auth/Auth";
+import Controls from "./components/Controls/Controls";
+import Playlists from "./components/Playlists/Playlists";
+import Tracks from './components/Tracks/Tracks';
 import './App.css';
 import { useSelector } from 'react-redux';
 import { ApplicationState, SignedInState } from './store';

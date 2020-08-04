@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import pkceChallenge from "pkce-challenge";
-import { CLIENT_ID, AUTHORIZATION_ENDPOINT, TOKEN_ENDPOINT, REQUESTED_SCOPES } from "./config";
-import { ApplicationDispatch, ApplicationState } from "./store";
+import { CLIENT_ID, AUTHORIZATION_ENDPOINT, TOKEN_ENDPOINT, REQUESTED_SCOPES } from "../../config";
+import { ApplicationDispatch, ApplicationState } from "../../store";
 
 /**
  * Get URI of the current page.

@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import axios from "axios";
-import { getUserPlaylists, getPlaylistTracks } from "./spotify";
+import { getUserPlaylists, getPlaylistTracks } from "../../spotify";
 import { useSelector, useDispatch } from "react-redux";
-import { ApplicationDispatch, SignedInState } from "./store";
+import { ApplicationDispatch, SignedInState } from "../../store";
 import style from "./Playlists.module.css";
 
 export default function() {

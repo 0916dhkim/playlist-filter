@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useSelector } from "react-redux";
-import { SignedInState } from "./store";
+import { SignedInState } from "../../store";
 import style from "./Tracks.module.css";
 
 export default function() {
