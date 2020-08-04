@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { SignedInState } from "../../store";
-import style from "./Tracks.module.css";
+import style from "./Tracks.module.scss";
 
 export default function() {
   const tracks = useSelector((state: SignedInState) => state.tracks);

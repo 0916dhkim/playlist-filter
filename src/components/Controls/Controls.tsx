@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ApplicationDispatch, SignedInState } from "../../store";
-import style from "./Controls.module.css";
+import style from "./Controls.module.scss";
 
 
 export  default function() {

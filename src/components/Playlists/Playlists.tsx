@@ -3,7 +3,7 @@ import axios from "axios";
 import { getUserPlaylists, getPlaylistTracks } from "../../spotify";
 import { useSelector, useDispatch } from "react-redux";
 import { ApplicationDispatch, SignedInState } from "../../store";
-import style from "./Playlists.module.css";
+import style from "./Playlists.module.scss";
 
 export default function() {
   const accessToken = useSelector((state: SignedInState) => state.accessToken);
