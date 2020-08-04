@@ -6,6 +6,7 @@ import style from "./Controls.module.css";
 
 export  default function() {
   const tempoRange = useSelector((state: SignedInState) => state.tempoRange);
+  const danceabilityRange = useSelector((state: SignedInState) => state.danceabilityRange);
   const tracks = useSelector((state: SignedInState) => state.tracks);
   const dispatch = useDispatch<ApplicationDispatch>();
 
@@ -56,6 +57,33 @@ export  default function() {
             }
             dispatch({
               type: "SET_MAX_TEMPO",
+              value: parsed
+            });
+          }} />
+        </div>
+      </fieldset>
+      <fieldset className={style.fieldset}>
+        <legend>Danceability</legend>
+        <div className={style.group}>
+          <div>Min ({danceabilityRange[0]})</div>
+          <input type="range" min={0} max={1} value={danceabilityRange[0]} step={0.01} onChange={e => {
+            let parsed = parseFloat(e.target.value);
+            if (Number.isNaN(parsed)) {
+              parsed = 0;
+            }
+            dispatch({
+              type: "SET_MIN_DANCEABILITY",
+              value: parsed
+            });
+          }} />
+          <div>Max ({danceabilityRange[1]})</div>
+          <input type="range" min={0} max={1} value={danceabilityRange[1]} step={0.01} onChange={e => {
+            let parsed = parseFloat(e.target.value);
+            if (Number.isNaN(parsed)) {
+              parsed = 0;
+            }
+            dispatch({
+              type: "SET_MAX_DANCEABILITY",
               value: parsed
             });
           }} />

@@ -7,6 +7,7 @@ export default function() {
   const tracks = useSelector((state: SignedInState) => state.tracks);
   const minTempo = useSelector((state: SignedInState) => state.tempoRange[0]);
   const maxTempo = useSelector((state: SignedInState) => state.tempoRange[1]);
+  const [minDanceability, maxDanceability] = useSelector((state: SignedInState) => state.danceabilityRange);
 
   const trackMap = useMemo(
     () => new Map(tracks.map(track => [track.id, track])),
@@ -14,8 +15,13 @@ export default function() {
   );
 
   const filteredTracks = useMemo(
-    () => Array.from(trackMap.values()).filter(track => track.tempo >= minTempo && track.tempo <= maxTempo),
-    [trackMap, minTempo, maxTempo]
+    () => Array.from(trackMap.values()).filter(track => (
+      track.tempo >= minTempo
+      && track.tempo <= maxTempo
+      && track.danceability >= minDanceability
+      && track.danceability <= maxDanceability
+    )),
+    [trackMap, minTempo, maxTempo, minDanceability, maxDanceability]
   );
 
   return (

@@ -22,7 +22,8 @@ export type SignedInState = {
   selectedPlaylistId?: string,
   loadingTracks: boolean,
   tracks: ReadonlyArray<TrackInfo>,
-  tempoRange: [number, number]
+  tempoRange: [number, number],
+  danceabilityRange: [number, number]
 };
 
 export type ApplicationState = SignedInState | SignedOutState;
@@ -57,7 +58,15 @@ type Action = {
 | {
   type: "SET_MAX_TEMPO",
   value: number
-};
+}
+| {
+  type: "SET_MIN_DANCEABILITY",
+  value: number
+}
+| {
+  type: "SET_MAX_DANCEABILITY",
+  value: number
+}
 
 const INITIAL_STATE: ApplicationState = {
   signedIn: false
@@ -94,6 +103,16 @@ function signedInReducer(state: SignedInState, action: Action): ApplicationState
         ...state,
         tempoRange: [state.tempoRange[0], action.value]
       };
+    case "SET_MIN_DANCEABILITY":
+      return {
+        ...state,
+        danceabilityRange: [action.value, state.danceabilityRange[1]]
+      };
+    case "SET_MAX_DANCEABILITY":
+      return {
+        ...state,
+        danceabilityRange: [state.danceabilityRange[0], action.value]
+      };
     default:
       return state;
   }
@@ -108,6 +127,7 @@ function signedOutReducer(state: SignedOutState, action: Action): ApplicationSta
         loadingTracks: false,
         tracks: [],
         tempoRange: [0, 300],
+        danceabilityRange: [0, 1],
         ...action.value
       }
     default:
