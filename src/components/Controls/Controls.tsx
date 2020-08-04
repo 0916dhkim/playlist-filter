@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ApplicationDispatch, SignedInState } from "../../store";
-import style from "./Controls.module.scss";
+import RangeInput from "../RangeInput/RangeInput";
 
 
 export  default function() {
@@ -35,60 +35,26 @@ export  default function() {
   return (
     <div>
       <h3>Controls</h3>
-      <fieldset className={style.fieldset}>
-        <legend>Tempo (BPM)</legend>
-        <div className={style.group}>
-          <div>Min ({tempoRange[0]})</div>
-          <input type="range" min={minTrackTempo} max={maxTrackTempo} step={1} value={tempoRange[0]} onChange={(e) => {
-            let parsed = parseFloat(e.target.value);
-            if (Number.isNaN(parsed)) {
-              parsed = 0;
-            }
-            dispatch({
-              type: "SET_MIN_TEMPO",
-              value: parsed
-            });
-          }} />
-          <div>Max ({tempoRange[1]})</div>
-          <input type="range" min={minTrackTempo} max={maxTrackTempo} step={1} value={tempoRange[1]} onChange={(e) => {
-            let parsed = parseFloat(e.target.value);
-            if (Number.isNaN(parsed)) {
-              parsed = 0;
-            }
-            dispatch({
-              type: "SET_MAX_TEMPO",
-              value: parsed
-            });
-          }} />
-        </div>
-      </fieldset>
-      <fieldset className={style.fieldset}>
-        <legend>Danceability</legend>
-        <div className={style.group}>
-          <div>Min ({danceabilityRange[0]})</div>
-          <input type="range" min={0} max={1} value={danceabilityRange[0]} step={0.01} onChange={e => {
-            let parsed = parseFloat(e.target.value);
-            if (Number.isNaN(parsed)) {
-              parsed = 0;
-            }
-            dispatch({
-              type: "SET_MIN_DANCEABILITY",
-              value: parsed
-            });
-          }} />
-          <div>Max ({danceabilityRange[1]})</div>
-          <input type="range" min={0} max={1} value={danceabilityRange[1]} step={0.01} onChange={e => {
-            let parsed = parseFloat(e.target.value);
-            if (Number.isNaN(parsed)) {
-              parsed = 0;
-            }
-            dispatch({
-              type: "SET_MAX_DANCEABILITY",
-              value: parsed
-            });
-          }} />
-        </div>
-      </fieldset>
+      <RangeInput
+        label="Tempo (BPM)"
+        lowerLimit={minTrackTempo}
+        upperLimit={maxTrackTempo}
+        step={1}
+        minValue={tempoRange[0]}
+        maxValue={tempoRange[1]}
+        setMinValue={x => dispatch({ type: "SET_MIN_TEMPO", value: x })}
+        setMaxValue={x => dispatch({ type: "SET_MAX_TEMPO", value: x })}
+      />
+      <RangeInput
+        label="Danceability"
+        lowerLimit={0}
+        upperLimit={1}
+        step={0.01}
+        minValue={danceabilityRange[0]}
+        maxValue={danceabilityRange[1]}
+        setMinValue={x => dispatch({ type: "SET_MIN_DANCEABILITY", value: x })}
+        setMaxValue={x => dispatch({ type: "SET_MAX_DANCEABILITY", value: x })}
+      />
     </div>
   );
 }

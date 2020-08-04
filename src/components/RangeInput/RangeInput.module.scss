@@ -1,0 +1,9 @@
+.fieldset {
+  padding: 1em;
+}
+
+.group {
+  display: grid;
+  gap: 0.2em;
+  grid-template-columns: 6em 1fr;
+}
