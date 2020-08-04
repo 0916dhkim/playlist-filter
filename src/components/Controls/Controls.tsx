@@ -26,12 +26,6 @@ export  default function() {
     [tracks]
   );
 
-  // Reset controls when tracks are updated.
-  useEffect(() => {
-    dispatch({ type: "SET_MIN_TEMPO", value: minTrackTempo });
-    dispatch({ type: "SET_MAX_TEMPO", value: maxTrackTempo });
-  }, [minTrackTempo, maxTrackTempo, dispatch])
-
   return (
     <div>
       <h3>Controls</h3>
