@@ -76,6 +76,9 @@ function Controls() {
           />
         ))}
       </div>
+      <button onClick={() => dispatch({ type: "RESET_AUDIO_FEATURE_RANGE" })}>
+        Reset Filters
+      </button>
     </div>
   );
 }

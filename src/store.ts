@@ -65,10 +65,29 @@ type Action = {
   feature: AudioFeatureKey,
   value: number
 }
+| {
+  type: "RESET_AUDIO_FEATURE_RANGE"
+}
 
 const INITIAL_STATE: SignedOutState = {
   signedIn: false
 };
+
+const DEFAULT_AUDIO_FEATURE_RANGE: Record<AudioFeatureKey, [number, number]> = {
+  duration_ms: [0, Infinity],
+  key: [0, Infinity],
+  mode: [0, 1],
+  time_signature: [0, Infinity],
+  acousticness: [0, 1],
+  danceability: [0, 1],
+  energy: [0, 1],
+  instrumentalness: [0, 1],
+  liveness: [0, 1],
+  loudness: [-Infinity, Infinity],
+  speechiness: [0, 1],
+  valence: [0, 1],
+  tempo: [0, Infinity]
+}
 
 function signedInReducer(state: SignedInState, action: Action): ApplicationState {
   switch (action.type) {
@@ -107,6 +126,11 @@ function signedInReducer(state: SignedInState, action: Action): ApplicationState
           [action.feature]: [state.audioFeatureRange[action.feature][0], action.value]
         }
       }
+    case "RESET_AUDIO_FEATURE_RANGE":
+      return {
+        ...state,
+        audioFeatureRange: DEFAULT_AUDIO_FEATURE_RANGE
+      };
     default:
       return state;
   }
@@ -120,21 +144,7 @@ function signedOutReducer(state: SignedOutState, action: Action): ApplicationSta
         playlists: [],
         loadingTracks: false,
         tracks: [],
-        audioFeatureRange: {
-          duration_ms: [0, Infinity],
-          key: [0, Infinity],
-          mode: [0, 1],
-          time_signature: [0, Infinity],
-          acousticness: [0, 1],
-          danceability: [0, 1],
-          energy: [0, 1],
-          instrumentalness: [0, 1],
-          liveness: [0, 1],
-          loudness: [-Infinity, Infinity],
-          speechiness: [0, 1],
-          valence: [0, 1],
-          tempo: [0, Infinity]
-        },
+        audioFeatureRange: DEFAULT_AUDIO_FEATURE_RANGE,
         ...action.value
       }
     default:
