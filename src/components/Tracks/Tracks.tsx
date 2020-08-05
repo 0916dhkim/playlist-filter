@@ -34,6 +34,7 @@ export default function() {
         <thead>
           <tr className={style.header}>
             <th>Title</th>
+            <th>Artists</th>
             <th>Tempo</th>
             <th>Acousticness</th>
             <th>Danceability</th>
@@ -49,6 +50,7 @@ export default function() {
           {filteredTracks.map(track => (
             <tr key={track.id} className={style.row}>
               <td>{track.name}</td>
+              <td>{track.artists.map(artist => artist.name).join(",")}</td>
               <td>{track.tempo}</td>
               <td>{track.acousticness}</td>
               <td>{track.danceability}</td>
