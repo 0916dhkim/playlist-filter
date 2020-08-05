@@ -3,7 +3,8 @@ import { Dispatch } from "react";
 import {
   Playlist,
   FullTrack,
-  AudioFeatures
+  AudioFeatures,
+  AudioFeatureKey
 } from "./spotify_types";
 
 type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
@@ -11,6 +12,10 @@ export type TrackInfo = Omit<FullTrack, "type"> & Omit<AudioFeatures, "type">;
 
 export type SignedOutState = {
   signedIn: false
+};
+
+export type AudioFeatureRange = {
+  [key in AudioFeatureKey]: [number, number]
 };
 
 export type SignedInState = {
@@ -22,8 +27,7 @@ export type SignedInState = {
   selectedPlaylistId?: string,
   loadingTracks: boolean,
   tracks: ReadonlyArray<TrackInfo>,
-  tempoRange: [number, number],
-  danceabilityRange: [number, number]
+  audioFeatureRange: AudioFeatureRange
 };
 
 export type ApplicationState = SignedInState | SignedOutState;
@@ -52,23 +56,17 @@ type Action = {
   value: ReadonlyArray<TrackInfo>
 }
 | {
-  type: "SET_MIN_TEMPO",
+  type: "SET_AUDIO_FEATURE_MIN",
+  feature: AudioFeatureKey,
   value: number
 }
 | {
-  type: "SET_MAX_TEMPO",
-  value: number
-}
-| {
-  type: "SET_MIN_DANCEABILITY",
-  value: number
-}
-| {
-  type: "SET_MAX_DANCEABILITY",
+  type: "SET_AUDIO_FEATURE_MAX",
+  feature: AudioFeatureKey,
   value: number
 }
 
-const INITIAL_STATE: ApplicationState = {
+const INITIAL_STATE: SignedOutState = {
   signedIn: false
 };
 
@@ -93,26 +91,22 @@ function signedInReducer(state: SignedInState, action: Action): ApplicationState
         tracks: action.value,
         loadingTracks: false
       };
-    case "SET_MIN_TEMPO":
+    case "SET_AUDIO_FEATURE_MIN":
       return {
         ...state,
-        tempoRange: [action.value, state.tempoRange[1]]
-      };
-    case "SET_MAX_TEMPO":
+        audioFeatureRange: {
+          ...state.audioFeatureRange,
+          [action.feature]: [action.value, state.audioFeatureRange[action.feature][1]]
+        }
+      }
+    case "SET_AUDIO_FEATURE_MAX":
       return {
         ...state,
-        tempoRange: [state.tempoRange[0], action.value]
-      };
-    case "SET_MIN_DANCEABILITY":
-      return {
-        ...state,
-        danceabilityRange: [action.value, state.danceabilityRange[1]]
-      };
-    case "SET_MAX_DANCEABILITY":
-      return {
-        ...state,
-        danceabilityRange: [state.danceabilityRange[0], action.value]
-      };
+        audioFeatureRange: {
+          ...state.audioFeatureRange,
+          [action.feature]: [state.audioFeatureRange[action.feature][0], action.value]
+        }
+      }
     default:
       return state;
   }
@@ -126,8 +120,21 @@ function signedOutReducer(state: SignedOutState, action: Action): ApplicationSta
         playlists: [],
         loadingTracks: false,
         tracks: [],
-        tempoRange: [0, 300],
-        danceabilityRange: [0, 1],
+        audioFeatureRange: {
+          duration_ms: [0, Infinity],
+          key: [0, Infinity],
+          mode: [0, 1],
+          time_signature: [0, Infinity],
+          acousticness: [0, 1],
+          danceability: [0, 1],
+          energy: [0, 1],
+          instrumentalness: [0, 1],
+          liveness: [0, 1],
+          loudness: [-Infinity, Infinity],
+          speechiness: [0, 1],
+          valence: [0, 1],
+          tempo: [0, Infinity]
+        },
         ...action.value
       }
     default:

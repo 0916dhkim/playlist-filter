@@ -6,24 +6,12 @@ import style from "./Controls.module.scss";
 
 
 export  default function() {
-  const tempoRange = useSelector((state: SignedInState) => state.tempoRange);
-  const danceabilityRange = useSelector((state: SignedInState) => state.danceabilityRange);
+  const range = useSelector((state: SignedInState) => state.audioFeatureRange);
   const tracks = useSelector((state: SignedInState) => state.tracks);
   const dispatch = useDispatch<ApplicationDispatch>();
 
-  /**
-   * Minimum tempo amongst tracks.
-   */
-  const minTrackTempo = useMemo(
-    () => Math.floor(tracks.map(track => track.tempo).reduce((a, b) => Math.min(a, b), Infinity)),
-    [tracks]
-  );
-
-  /**
-   * Maximum tempo amongst tracks.
-   */
-  const maxTrackTempo = useMemo(
-    () => Math.ceil(tracks.map(track => track.tempo).reduce((a, b) => Math.max(a, b), 0)),
+  const [minTrackTempo, maxTrackTempo] = useMemo(
+    () => tracks.map(track => track.tempo).reduce((a, b) => [Math.min(a[0], Math.floor(b)), Math.max(a[1], Math.ceil(b))], [Infinity, -Infinity]),
     [tracks]
   );
 
@@ -36,20 +24,20 @@ export  default function() {
           lowerLimit={minTrackTempo}
           upperLimit={maxTrackTempo}
           step={1}
-          minValue={tempoRange[0]}
-          maxValue={tempoRange[1]}
-          setMinValue={x => dispatch({ type: "SET_MIN_TEMPO", value: x })}
-          setMaxValue={x => dispatch({ type: "SET_MAX_TEMPO", value: x })}
+          minValue={range.tempo[0]}
+          maxValue={range.tempo[1]}
+          setMinValue={x => dispatch({ type: "SET_AUDIO_FEATURE_MIN", feature: "tempo", value: x })}
+          setMaxValue={x => dispatch({ type: "SET_AUDIO_FEATURE_MAX", feature: "tempo", value: x })}
         />
         <RangeInput
           label="Danceability"
           lowerLimit={0}
           upperLimit={1}
           step={0.01}
-          minValue={danceabilityRange[0]}
-          maxValue={danceabilityRange[1]}
-          setMinValue={x => dispatch({ type: "SET_MIN_DANCEABILITY", value: x })}
-          setMaxValue={x => dispatch({ type: "SET_MAX_DANCEABILITY", value: x })}
+          minValue={range.danceability[0]}
+          maxValue={range.danceability[1]}
+          setMinValue={x => dispatch({ type: "SET_AUDIO_FEATURE_MIN", feature: "danceability", value: x })}
+          setMaxValue={x => dispatch({ type: "SET_AUDIO_FEATURE_MAX", feature: "danceability", value: x })}
         />
       </div>
     </div>

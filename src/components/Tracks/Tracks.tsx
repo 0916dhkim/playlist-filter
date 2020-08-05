@@ -1,13 +1,21 @@
 import React, { useMemo } from "react";
 import { useSelector } from "react-redux";
-import { SignedInState } from "../../store";
+import { SignedInState, TrackInfo, AudioFeatureRange } from "../../store";
 import style from "./Tracks.module.scss";
+import { AudioFeatureKey } from "../../spotify_types";
+
+function validateTrack(track: TrackInfo, range: AudioFeatureRange): boolean {
+  for (const feature of AudioFeatureKey) {
+    if (track[feature] < range[feature][0] || track[feature] > range[feature][1]) {
+      return false;
+    }
+  }
+  return true;
+}
 
 export default function() {
   const tracks = useSelector((state: SignedInState) => state.tracks);
-  const minTempo = useSelector((state: SignedInState) => state.tempoRange[0]);
-  const maxTempo = useSelector((state: SignedInState) => state.tempoRange[1]);
-  const [minDanceability, maxDanceability] = useSelector((state: SignedInState) => state.danceabilityRange);
+  const range = useSelector((state: SignedInState) => state.audioFeatureRange);
 
   const trackMap = useMemo(
     () => new Map(tracks.map(track => [track.id, track])),
@@ -15,13 +23,8 @@ export default function() {
   );
 
   const filteredTracks = useMemo(
-    () => Array.from(trackMap.values()).filter(track => (
-      track.tempo >= minTempo
-      && track.tempo <= maxTempo
-      && track.danceability >= minDanceability
-      && track.danceability <= maxDanceability
-    )),
-    [trackMap, minTempo, maxTempo, minDanceability, maxDanceability]
+    () => Array.from(trackMap.values()).filter(track => validateTrack(track, range)),
+    [trackMap, range]
   );
 
   return (
