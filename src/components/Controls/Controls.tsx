@@ -1,7 +1,8 @@
-import React, { useMemo, useEffect } from "react";
+import React, { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ApplicationDispatch, SignedInState } from "../../store";
 import RangeInput from "../RangeInput/RangeInput";
+import style from "./Controls.module.scss";
 
 
 export  default function() {
@@ -29,26 +30,28 @@ export  default function() {
   return (
     <div>
       <h3>Controls</h3>
-      <RangeInput
-        label="Tempo (BPM)"
-        lowerLimit={minTrackTempo}
-        upperLimit={maxTrackTempo}
-        step={1}
-        minValue={tempoRange[0]}
-        maxValue={tempoRange[1]}
-        setMinValue={x => dispatch({ type: "SET_MIN_TEMPO", value: x })}
-        setMaxValue={x => dispatch({ type: "SET_MAX_TEMPO", value: x })}
-      />
-      <RangeInput
-        label="Danceability"
-        lowerLimit={0}
-        upperLimit={1}
-        step={0.01}
-        minValue={danceabilityRange[0]}
-        maxValue={danceabilityRange[1]}
-        setMinValue={x => dispatch({ type: "SET_MIN_DANCEABILITY", value: x })}
-        setMaxValue={x => dispatch({ type: "SET_MAX_DANCEABILITY", value: x })}
-      />
+      <div className={style.container}>
+        <RangeInput
+          label="Tempo (BPM)"
+          lowerLimit={minTrackTempo}
+          upperLimit={maxTrackTempo}
+          step={1}
+          minValue={tempoRange[0]}
+          maxValue={tempoRange[1]}
+          setMinValue={x => dispatch({ type: "SET_MIN_TEMPO", value: x })}
+          setMaxValue={x => dispatch({ type: "SET_MAX_TEMPO", value: x })}
+        />
+        <RangeInput
+          label="Danceability"
+          lowerLimit={0}
+          upperLimit={1}
+          step={0.01}
+          minValue={danceabilityRange[0]}
+          maxValue={danceabilityRange[1]}
+          setMinValue={x => dispatch({ type: "SET_MIN_DANCEABILITY", value: x })}
+          setMaxValue={x => dispatch({ type: "SET_MAX_DANCEABILITY", value: x })}
+        />
+      </div>
     </div>
   );
 }
