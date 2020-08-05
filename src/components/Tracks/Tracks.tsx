@@ -29,7 +29,7 @@ export default function() {
 
   return (
     <div>
-      <h3>Tracks</h3>
+      <h3>Tracks ({filteredTracks.length})</h3>
       <table className={style.table}>
         <thead>
           <tr className={style.header}>
