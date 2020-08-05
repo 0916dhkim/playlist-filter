@@ -3,9 +3,47 @@ import { useDispatch, useSelector } from "react-redux";
 import { ApplicationDispatch, SignedInState } from "../../store";
 import RangeInput from "../RangeInput/RangeInput";
 import style from "./Controls.module.scss";
+import { AudioFeatureKey } from "../../spotify_types";
 
+type NormalizedRangeInputProps = {
+  feature: AudioFeatureKey
+  range: [number, number],
+  dispatch: ApplicationDispatch
+};
 
-export  default function() {
+/**
+ * RangeInput Component for Audio Features with Range 0 to 1.
+ */
+function NormalizedRangeInput({ feature, range, dispatch }: NormalizedRangeInputProps) {
+  const label = useMemo(() => {
+    const ret = feature.replace("_", " ");
+    return ret[0].toUpperCase() + ret.slice(1);
+  }, [feature]);
+  return (
+    <RangeInput
+      label={label}
+      lowerLimit={0}
+      upperLimit={1}
+      step={0.01}
+      minValue={range[0]}
+      maxValue={range[1]}
+      setMinValue={x => dispatch({ type: "SET_AUDIO_FEATURE_MIN", feature, value: x })}
+      setMaxValue={x => dispatch({ type: "SET_AUDIO_FEATURE_MAX", feature, value: x })}
+    />
+  );
+}
+
+const NORMALIZED_FEATURES_TO_CONTROL: ReadonlyArray<AudioFeatureKey> = [
+  "acousticness",
+  "danceability",
+  "energy",
+  "instrumentalness",
+  "liveness",
+  "speechiness",
+  "valence"
+];
+
+function Controls() {
   const range = useSelector((state: SignedInState) => state.audioFeatureRange);
   const tracks = useSelector((state: SignedInState) => state.tracks);
   const dispatch = useDispatch<ApplicationDispatch>();
@@ -29,17 +67,17 @@ export  default function() {
           setMinValue={x => dispatch({ type: "SET_AUDIO_FEATURE_MIN", feature: "tempo", value: x })}
           setMaxValue={x => dispatch({ type: "SET_AUDIO_FEATURE_MAX", feature: "tempo", value: x })}
         />
-        <RangeInput
-          label="Danceability"
-          lowerLimit={0}
-          upperLimit={1}
-          step={0.01}
-          minValue={range.danceability[0]}
-          maxValue={range.danceability[1]}
-          setMinValue={x => dispatch({ type: "SET_AUDIO_FEATURE_MIN", feature: "danceability", value: x })}
-          setMaxValue={x => dispatch({ type: "SET_AUDIO_FEATURE_MAX", feature: "danceability", value: x })}
-        />
+        {NORMALIZED_FEATURES_TO_CONTROL.map(feature => (
+          <NormalizedRangeInput
+            key={feature}
+            feature={feature}
+            dispatch={dispatch}
+            range={range[feature]}
+          />
+        ))}
       </div>
     </div>
   );
 }
+
+export default Controls;
