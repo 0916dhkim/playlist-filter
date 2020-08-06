@@ -1,5 +1,5 @@
 import axios, { CancelToken } from "axios";
-import { TrackInfo } from "./store";
+import { TrackInfo } from "./state";
 import { API_ROOT } from "./config";
 import {
   Paging,

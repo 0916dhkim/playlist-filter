@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { ApplicationDispatch, SignedInState } from "../../store";
+import { ApplicationDispatch } from "../../store";
+import { PersonalPageState } from "../../state";
 import RangeInput from "../RangeInput/RangeInput";
 import style from "./Controls.module.scss";
 import { AudioFeatureKey } from "../../spotify_types";
@@ -44,8 +45,8 @@ const NORMALIZED_FEATURES_TO_CONTROL: ReadonlyArray<AudioFeatureKey> = [
 ];
 
 function Controls() {
-  const range = useSelector((state: SignedInState) => state.audioFeatureRange);
-  const tracks = useSelector((state: SignedInState) => state.tracks);
+  const range = useSelector((state: PersonalPageState) => state.audioFeatureRange);
+  const tracks = useSelector((state: PersonalPageState) => state.tracks);
   const dispatch = useDispatch<ApplicationDispatch>();
 
   const [minTrackTempo, maxTrackTempo] = useMemo(

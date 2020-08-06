@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useSelector } from "react-redux";
-import { SignedInState, TrackInfo, AudioFeatureRange } from "../../store";
+import { PersonalPageState, TrackInfo, AudioFeatureRange } from "../../state";
 import style from "./Tracks.module.scss";
 import { AudioFeatureKey } from "../../spotify_types";
 
@@ -14,8 +14,8 @@ function validateTrack(track: TrackInfo, range: AudioFeatureRange): boolean {
 }
 
 export default function() {
-  const tracks = useSelector((state: SignedInState) => state.tracks);
-  const range = useSelector((state: SignedInState) => state.audioFeatureRange);
+  const tracks = useSelector((state: PersonalPageState) => state.tracks);
+  const range = useSelector((state: PersonalPageState) => state.audioFeatureRange);
 
   const trackMap = useMemo(
     () => new Map(tracks.map(track => [track.id, track])),

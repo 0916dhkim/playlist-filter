@@ -1,9 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import pkceChallenge from "pkce-challenge";
 import { CLIENT_ID, AUTHORIZATION_ENDPOINT, TOKEN_ENDPOINT, REQUESTED_SCOPES } from "../../config";
-import { ApplicationDispatch, ApplicationState } from "../../store";
+import { ApplicationState } from "../../state";
+import { ApplicationDispatch } from "../../store";
 
 /**
  * Get URI of the current page.
@@ -152,9 +153,10 @@ function checkSession(dispatch: ApplicationDispatch) {
 }
 
 export default function() {
-  const signedIn = useSelector((state: ApplicationState) => state.signedIn);
-  const accessTokenExpiry = useSelector((state: ApplicationState) => state.signedIn ? state.accessTokenExpiry : null);
-  const refreshToken = useSelector((state: ApplicationState) => state.signedIn ? state.refreshToken : null);
+  const page = useSelector((state: ApplicationState) => state.page);
+  const signedIn = useMemo(() => page === "personal", [page]);
+  const accessTokenExpiry = useSelector((state: ApplicationState) => state.page === "personal" ? state.accessTokenExpiry : null);
+  const refreshToken = useSelector((state: ApplicationState) => state.page === "personal" ? state.refreshToken : null);
   const dispatch = useDispatch<ApplicationDispatch>();
 
   // On load.

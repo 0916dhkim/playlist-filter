@@ -4,11 +4,11 @@ import Controls from "./components/Controls/Controls";
 import Playlists from "./components/Playlists/Playlists";
 import Tracks from './components/Tracks/Tracks';
 import { useSelector } from 'react-redux';
-import { ApplicationState, SignedInState } from './store';
+import { ApplicationState, PersonalPageState } from './state';
 
 function SignedInApp() {
-  const tracks = useSelector((state: SignedInState) => state.tracks);
-  const loadingTracks = useSelector((state: SignedInState) => state.loadingTracks);
+  const tracks = useSelector((state: PersonalPageState) => state.tracks);
+  const loadingTracks = useSelector((state: PersonalPageState) => state.loadingTracks);
   return (
     <div>
       {tracks.length > 0 && <Controls />}
@@ -22,14 +22,24 @@ function SignedInApp() {
 }
 
 function App() {
-  const signedIn = useSelector((state: ApplicationState) => state.signedIn);
-  return (
-    <div>
-      <h1>Spotify Filter</h1>
-      <Auth />
-      {signedIn && <SignedInApp />}
-    </div>
-  );
+  const page = useSelector((state: ApplicationState) => state.page);
+  switch (page) {
+    case "landing":
+      return (
+        <div>
+          <h1>Spotify Filter</h1>
+          <Auth />
+        </div>
+      );
+    case "personal":
+      return (
+        <div>
+          <h1>Spotify Filter</h1>
+          <Auth />
+          <SignedInApp />
+        </div>
+      );
+  }
 }
 
 export default App;

@@ -2,13 +2,14 @@ import React, { useEffect } from "react";
 import axios from "axios";
 import { getUserPlaylists, getPlaylistTracks } from "../../spotify";
 import { useSelector, useDispatch } from "react-redux";
-import { ApplicationDispatch, SignedInState } from "../../store";
+import { ApplicationDispatch } from "../../store";
+import { PersonalPageState } from "../../state";
 import style from "./Playlists.module.scss";
 
 export default function() {
-  const accessToken = useSelector((state: SignedInState) => state.accessToken);
-  const playlists = useSelector((state: SignedInState) => state.playlists);
-  const selectedPlaylistId = useSelector((state: SignedInState) => state.selectedPlaylistId);
+  const accessToken = useSelector((state: PersonalPageState) => state.accessToken);
+  const playlists = useSelector((state: PersonalPageState) => state.playlists);
+  const selectedPlaylistId = useSelector((state: PersonalPageState) => state.selectedPlaylistId);
   const dispatch = useDispatch<ApplicationDispatch>();
   useEffect(() => {
     const cancelTokenSource = axios.CancelToken.source();
