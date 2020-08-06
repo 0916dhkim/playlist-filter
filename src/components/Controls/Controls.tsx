@@ -64,7 +64,7 @@ function Controls() {
           upperLimit={maxTrackTempo}
           step={1}
           minValue={range.tempo[0]}
-          maxValue={range.tempo[1]}
+          maxValue={Math.min(range.tempo[1], maxTrackTempo)}
           setMinValue={x => dispatch({ type: "SET_AUDIO_FEATURE_MIN", feature: "tempo", value: x })}
           setMaxValue={x => dispatch({ type: "SET_AUDIO_FEATURE_MAX", feature: "tempo", value: x })}
         />
