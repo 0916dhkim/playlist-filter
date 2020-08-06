@@ -25,7 +25,12 @@ export type PersonalPageState = {
   audioFeatureRange: AudioFeatureRange
 } & Required<SessionState>;
 
-export type ApplicationState = PersonalPageState | LandingPageState;
+export type ExportPageState = {
+  page: "export",
+  tracks: ReadonlyArray<FullTrack>
+} & SessionState
+
+export type ApplicationState = PersonalPageState | LandingPageState | ExportPageState;
 
 export const INITIAL_STATE: LandingPageState = { page: "landing" };
 

@@ -1,6 +1,7 @@
 import {
   Playlist,
-  AudioFeatureKey
+  AudioFeatureKey,
+  FullTrack
 } from "./spotify_types"
 import { TrackInfo } from "./state";
 
@@ -39,4 +40,8 @@ export type Action = {
 }
 | {
   type: "RESET_AUDIO_FEATURE_RANGE"
+}
+| {
+  type: "GO_TO_EXPORT_PAGE",
+  tracks: ReadonlyArray<FullTrack>
 }

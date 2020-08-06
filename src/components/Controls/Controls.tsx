@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ApplicationDispatch } from "../../store";
 import { PersonalPageState } from "../../state";
+import { filterTracks } from "../../filterTracks";
 import RangeInput from "../RangeInput/RangeInput";
 import style from "./Controls.module.scss";
 import { AudioFeatureKey } from "../../spotify_types";
@@ -54,6 +55,13 @@ function Controls() {
     [tracks]
   );
 
+  function handleExport() {
+    dispatch({
+      type: "GO_TO_EXPORT_PAGE",
+      tracks: filterTracks(tracks, range).map(t => ({...t, type: "track"}))
+    });
+  }
+
   return (
     <div>
       <h3>Controls</h3>
@@ -79,6 +87,9 @@ function Controls() {
       </div>
       <button onClick={() => dispatch({ type: "RESET_AUDIO_FEATURE_RANGE" })}>
         Reset Filters
+      </button>
+      <button onClick={handleExport}>
+        Export Tracks
       </button>
     </div>
   );

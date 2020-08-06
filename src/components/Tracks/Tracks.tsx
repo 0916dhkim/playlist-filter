@@ -1,17 +1,8 @@
 import React, { useMemo } from "react";
 import { useSelector } from "react-redux";
-import { PersonalPageState, TrackInfo, AudioFeatureRange } from "../../state";
+import { PersonalPageState } from "../../state";
+import { filterTracks } from "../../filterTracks";
 import style from "./Tracks.module.scss";
-import { AudioFeatureKey } from "../../spotify_types";
-
-function validateTrack(track: TrackInfo, range: AudioFeatureRange): boolean {
-  for (const feature of AudioFeatureKey) {
-    if (track[feature] < range[feature][0] || track[feature] > range[feature][1]) {
-      return false;
-    }
-  }
-  return true;
-}
 
 export default function() {
   const tracks = useSelector((state: PersonalPageState) => state.tracks);
@@ -23,7 +14,7 @@ export default function() {
   );
 
   const filteredTracks = useMemo(
-    () => Array.from(trackMap.values()).filter(track => validateTrack(track, range)),
+    () => filterTracks(Array.from(trackMap.values()), range),
     [trackMap, range]
   );
 

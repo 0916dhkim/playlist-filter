@@ -3,6 +3,7 @@ import { Login } from "./components/Login/Login";
 import Controls from "./components/Controls/Controls";
 import Playlists from "./components/Playlists/Playlists";
 import Tracks from './components/Tracks/Tracks';
+import { ExportPage } from "./components/ExportPage/ExportPage";
 import { useSelector, useDispatch } from 'react-redux';
 import { ApplicationState, PersonalPageState } from './state';
 import { handleAuthRedirect, getSession } from "./auth";
@@ -59,6 +60,8 @@ function App() {
           <SignedInApp />
         </div>
       );
+    case "export":
+      return <ExportPage />;
   }
 }
 

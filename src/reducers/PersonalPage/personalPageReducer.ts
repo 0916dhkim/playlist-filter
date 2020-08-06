@@ -19,6 +19,12 @@ function personalPageReducer(state: PersonalPageState, action: Action): Applicat
   switch (action.type) {
     case "SIGN_OUT":
       return { page: "landing" };
+    case "GO_TO_EXPORT_PAGE":
+      return {
+        page: "export",
+        tracks: action.tracks,
+        session: state.session
+      };
     default:
       return composedReducer(state, action);
   }
