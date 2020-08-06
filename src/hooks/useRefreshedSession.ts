@@ -27,6 +27,10 @@ export function useRefreshedSession(): Promise<Session> {
         value: refreshedSession
       });
       return refreshedSession;
+    }, e => {
+      console.error(`Failed to refresh session: ${e}`);
+      dispatch({ type: "SIGN_OUT" });
+      return currentSessionPromise;
     });
   }
 
