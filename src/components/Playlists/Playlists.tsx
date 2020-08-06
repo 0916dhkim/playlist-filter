@@ -5,15 +5,18 @@ import { useSelector, useDispatch } from "react-redux";
 import { ApplicationDispatch } from "../../store";
 import { PersonalPageState } from "../../state";
 import style from "./Playlists.module.scss";
+import { useRefreshedSession } from "../../hooks/useRefreshedSession";
 
 export default function() {
-  const accessToken  = useSelector((state: PersonalPageState) => state.session.accessToken);
+  const refreshedSession = useRefreshedSession();
   const playlists = useSelector((state: PersonalPageState) => state.playlists);
   const selectedPlaylistId = useSelector((state: PersonalPageState) => state.selectedPlaylistId);
   const dispatch = useDispatch<ApplicationDispatch>();
   useEffect(() => {
     const cancelTokenSource = axios.CancelToken.source();
-    getUserPlaylists(accessToken, cancelTokenSource.token).then(playlists => {
+    refreshedSession.then(
+      ({ accessToken }) => getUserPlaylists(accessToken, cancelTokenSource.token)
+    ).then(playlists => {
       dispatch({
         type: "SET_PLAYLISTS",
         value: playlists
@@ -24,13 +27,15 @@ export default function() {
       }
     });
     return () => cancelTokenSource.cancel();
-  }, [accessToken, dispatch]);
+  }, [refreshedSession, dispatch]);
 
   // Load tracks from selected playlist.
   useEffect(() => {
     if (selectedPlaylistId) {
       const cancelTokenSource = axios.CancelToken.source();
-      getPlaylistTracks(selectedPlaylistId, accessToken, cancelTokenSource.token).then(tracks => dispatch({
+      refreshedSession.then(
+        ({ accessToken }) => getPlaylistTracks(selectedPlaylistId, accessToken, cancelTokenSource.token)
+      ).then(tracks => dispatch({
         type: "SET_TRACKS",
         value: tracks
       })).catch(e => {
@@ -41,7 +46,7 @@ export default function() {
 
       return () => cancelTokenSource.cancel();
     }
-  }, [selectedPlaylistId, accessToken, dispatch]);
+  }, [selectedPlaylistId, refreshedSession, dispatch]);
 
   async function selectPlaylist(id: string) {
     dispatch({
