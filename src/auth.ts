@@ -78,6 +78,10 @@ export async function handleAuthRedirect() {
       throw new Error("Missing local code verifier.");
     }
 
+    // Remove state & code verifier from local storage.
+    localStorage.removeItem("pkce-state");
+    localStorage.removeItem("pkce-code-verifier");
+
     const body = new URLSearchParams();
     body.append("client_id", CLIENT_ID);
     body.append("grant_type", "authorization_code");
