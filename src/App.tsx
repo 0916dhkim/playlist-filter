@@ -1,10 +1,27 @@
-import React from 'react';
-import Auth from "./components/Auth/Auth";
+import React, { useEffect } from 'react';
+import { Login } from "./components/Login/Login";
 import Controls from "./components/Controls/Controls";
 import Playlists from "./components/Playlists/Playlists";
 import Tracks from './components/Tracks/Tracks';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { ApplicationState, PersonalPageState } from './state';
+import { handleAuthRedirect, getSession } from "./auth";
+import { ApplicationDispatch } from './store';
+
+function useAuth() {
+  const dispatch = useDispatch<ApplicationDispatch>();
+  useEffect(() => {
+    handleAuthRedirect();
+
+    const session = getSession();
+    if (session) {
+      dispatch({
+        type: "SIGN_IN",
+        value: session
+      });
+    }
+  }, [dispatch]);
+}
 
 function SignedInApp() {
   const tracks = useSelector((state: PersonalPageState) => state.tracks);
@@ -23,19 +40,22 @@ function SignedInApp() {
 
 function App() {
   const page = useSelector((state: ApplicationState) => state.page);
+
+  useAuth();
+
   switch (page) {
     case "landing":
       return (
         <div>
           <h1>Spotify Filter</h1>
-          <Auth />
+          <Login />
         </div>
       );
     case "personal":
       return (
         <div>
           <h1>Spotify Filter</h1>
-          <Auth />
+          <Login />
           <SignedInApp />
         </div>
       );

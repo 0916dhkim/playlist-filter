@@ -4,10 +4,13 @@ import {
   AudioFeatures,
   AudioFeatureKey
 } from "./spotify_types";
+import { Session } from "./auth";
 
 export type TrackInfo = Omit<FullTrack, "type"> & Omit<AudioFeatures, "type">;
 
-export type LandingPageState = { page: "landing" };
+type SessionState = { session?: Session };
+
+export type LandingPageState = { page: "landing" } & SessionState;
 
 export type AudioFeatureRange = {
   [key in AudioFeatureKey]: [number, number]
@@ -15,15 +18,12 @@ export type AudioFeatureRange = {
 
 export type PersonalPageState = {
   page: "personal",
-  accessToken: string,
-  accessTokenExpiry: number,
-  refreshToken: string,
   playlists: ReadonlyArray<Playlist>,
   selectedPlaylistId?: string,
   loadingTracks: boolean,
   tracks: ReadonlyArray<TrackInfo>,
   audioFeatureRange: AudioFeatureRange
-};
+} & Required<SessionState>;
 
 export type ApplicationState = PersonalPageState | LandingPageState;
 

@@ -6,11 +6,11 @@ function landingPageReducer(state: LandingPageState, action: Action): Applicatio
     case "SIGN_IN":
       return {
         page: "personal",
+        session: action.value,
         playlists: [],
         loadingTracks: false,
         tracks: [],
         audioFeatureRange: DEFAULT_AUDIO_FEATURE_RANGE,
-        ...action.value
       }
     default:
       return state;

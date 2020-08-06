@@ -1,10 +1,12 @@
-import React, { useEffect, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import pkceChallenge from "pkce-challenge";
-import { CLIENT_ID, AUTHORIZATION_ENDPOINT, TOKEN_ENDPOINT, REQUESTED_SCOPES } from "../../config";
-import { ApplicationState } from "../../state";
-import { ApplicationDispatch } from "../../store";
+import { CLIENT_ID, AUTHORIZATION_ENDPOINT, TOKEN_ENDPOINT, REQUESTED_SCOPES } from "./config";
+
+export type Session = {
+  accessToken: string,
+  accessTokenExpiry: number,
+  refreshToken: string
+};
 
 /**
  * Get URI of the current page.
@@ -29,7 +31,7 @@ function generateRandomString() {
 /**
  * Begin sign-in process.
  */
-async function signIn() {
+export async function signIn() {
   const state = generateRandomString();
   localStorage.setItem("pkce-state", state);
 
@@ -52,16 +54,16 @@ async function signIn() {
 /**
  * Discard user credentials.
  */
-function signOut(dispatch: ApplicationDispatch) {
+export function signOut() {
   localStorage.removeItem("access-token");
+  localStorage.removeItem("access-token-expiry");
   localStorage.removeItem("refresh-token");
-  dispatch({ type: "SIGN_OUT" });
 }
 
 /**
  * Handle user redirected from auth server.
  */
-async function handleAuthRedirect() {
+export async function handleAuthRedirect() {
   const params = new URL(window.location.href).searchParams;
   const code = params.get("code");
   const state = params.get("state");
@@ -109,7 +111,7 @@ async function handleAuthRedirect() {
  * Asynchronously request new access token.
  * @param refreshToken Spotify refresh token
  */
-async function requestRefresh(refreshToken: string) {
+export async function refresh(refreshToken: string): Promise<Session> {
   const body = new URLSearchParams();
   body.append("grant_type", "refresh_token");
   body.append("refresh_token", refreshToken);
@@ -138,63 +140,15 @@ async function requestRefresh(refreshToken: string) {
   };
 }
 
-function checkSession(dispatch: ApplicationDispatch) {
+/**
+ * @returns Session information saved in local storage.
+ */
+export function getSession(): Session | null {
   const accessToken = localStorage.getItem("access-token");
   const refreshToken = localStorage.getItem("refresh-token");
   const accessTokenExpiry = parseFloat(localStorage.getItem("access-token-expiry") || "");
   if (accessToken && refreshToken && accessTokenExpiry) {
-    dispatch(
-      {
-        type: "SIGN_IN",
-        value: { accessToken, accessTokenExpiry, refreshToken }
-      }
-    );
+    return { accessToken, accessTokenExpiry, refreshToken };
   }
-}
-
-export default function() {
-  const page = useSelector((state: ApplicationState) => state.page);
-  const signedIn = useMemo(() => page === "personal", [page]);
-  const accessTokenExpiry = useSelector((state: ApplicationState) => state.page === "personal" ? state.accessTokenExpiry : null);
-  const refreshToken = useSelector((state: ApplicationState) => state.page === "personal" ? state.refreshToken : null);
-  const dispatch = useDispatch<ApplicationDispatch>();
-
-  // On load.
-  useEffect(() => {
-    handleAuthRedirect();
-    checkSession(dispatch);
-  }, [dispatch]);
-
-  // Set timer for access token expiry.
-  useEffect(() => {
-    if (accessTokenExpiry && refreshToken) {
-      const timer = setTimeout(() => {
-        // 1 minute left for access token expiration.
-        // Start refreshing.
-        requestRefresh(refreshToken).then(res => {
-          // Token refresh successful.
-          dispatch({
-            type: "SIGN_IN",
-            value: res
-          });
-        }).catch(e => {
-          // Failed to refresh token.
-          console.error(`Failed to refresh access token: ${e}`);
-          // Sign out.
-          dispatch({ type: "SIGN_OUT" });
-        });
-      }, Math.min(0, accessTokenExpiry - Date.now() - 60 * 1000))
-
-      return () => clearTimeout(timer);
-    }
-  }, [accessTokenExpiry, refreshToken, dispatch]);
-
-  return (
-    <div>
-      {signedIn
-        ? <button onClick={() => signOut(dispatch)}>Sign Out</button>
-        : <button onClick={signIn}>Sign In</button>
-      }
-    </div>
-  );
+  return null;
 }

@@ -7,7 +7,7 @@ import { PersonalPageState } from "../../state";
 import style from "./Playlists.module.scss";
 
 export default function() {
-  const accessToken = useSelector((state: PersonalPageState) => state.accessToken);
+  const accessToken  = useSelector((state: PersonalPageState) => state.session.accessToken);
   const playlists = useSelector((state: PersonalPageState) => state.playlists);
   const selectedPlaylistId = useSelector((state: PersonalPageState) => state.selectedPlaylistId);
   const dispatch = useDispatch<ApplicationDispatch>();
