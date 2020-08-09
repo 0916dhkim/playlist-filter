@@ -1,4 +1,4 @@
-import axios, { CancelToken } from "axios";
+import axios, { CancelToken, AxiosRequestConfig } from "axios";
 import { TrackInfo } from "./state";
 import { API_ROOT } from "./config";
 import {
@@ -24,18 +24,21 @@ function timeout(ms: number): Promise<void> {
 }
 
 /**
- * Send HTTP request to Spotify and handle rate-limited message.
- * @param url Target URL to send request to.
+ * Format access token to http bearer authorization header.
  * @param accessToken Spotify access token.
- * @param cancelToken Axios cancel token.
+ */
+function accessTokenToHeader(accessToken: string): { "Authorization": string } {
+  return { "Authorization": `Bearer ${accessToken}` };
+}
+
+/**
+ * Send HTTP request to Spotify and handle rate-limited message.
+ * @param requestConfig Config for axios request.
  * @param maxRetry Max number of trial before throwing error.
  */
-async function rateLimitedRequest<T>(url: string, accessToken: string, cancelToken: CancelToken, maxRetry: number = 3): Promise<T> {
+async function rateLimitedRequest<T>(requestConfig: AxiosRequestConfig, maxRetry: number = 3): Promise<T> {
   for (let i = 0; i < maxRetry; i++) {
-    const res = await axios.get(url, {
-      headers: { "Authorization": `Bearer ${accessToken}` },
-      cancelToken
-    });
+    const res = await axios(requestConfig);
     if (res.status === 200) {
       return res.data;
     }
@@ -50,11 +53,16 @@ async function rateLimitedRequest<T>(url: string, accessToken: string, cancelTok
   throw new Error(`Failed to get response after ${maxRetry} retries.`);
 }
 
-async function requestAllPages<T>(url: string, accessToken: string, cancelToken: CancelToken): Promise<T[]> {
+async function getAllPages<T>(url: string, accessToken: string, cancelToken: CancelToken): Promise<T[]> {
   let nextUrl: string | null = url;
   const items: T[] = [];
   while (nextUrl) {
-    const res: Paging<T> = await rateLimitedRequest<Paging<T>>(nextUrl, accessToken, cancelToken);
+    const res: Paging<T> = await rateLimitedRequest<Paging<T>>({
+      method: "GET",
+      url: nextUrl,
+      headers: accessTokenToHeader(accessToken),
+      cancelToken
+    });
     for (let item of res.items) {
       items.push(item);
     }
@@ -63,27 +71,36 @@ async function requestAllPages<T>(url: string, accessToken: string, cancelToken:
   return items;
 }
 
+async function getOne<T>(url: string, accessToken: string, cancelToken: CancelToken): Promise<T> {
+  return rateLimitedRequest<T>({
+    method: "GET",
+    url,
+    headers: accessTokenToHeader(accessToken),
+    cancelToken
+  });
+}
+
 export async function getMe(accessToken: string, cancelToken: CancelToken): Promise<PrivateUser> {
   const url = `${API_ROOT}/me`;
-  return rateLimitedRequest(url, accessToken, cancelToken);
+  return getOne(url, accessToken, cancelToken);
 }
 
 export async function getUserPlaylists(accessToken: string, cancelToken: CancelToken): Promise<Playlist[]> {
   const me = await getMe(accessToken, cancelToken);
   const url = `${API_ROOT}/users/${me.id}/playlists`;
-  return requestAllPages(url, accessToken, cancelToken);
+  return getAllPages(url, accessToken, cancelToken);
 }
 
 export async function getPlaylistTracks(playlistId: string, accessToken: string, cancelToken: CancelToken): Promise<Array<TrackInfo>> {
   const url = `${API_ROOT}/playlists/${playlistId}/tracks`;
-  const tracks = await requestAllPages<PlaylistTrack>(url, accessToken, cancelToken);
+  const tracks = await getAllPages<PlaylistTrack>(url, accessToken, cancelToken);
   const batches = splitIntoBatches(tracks, 40);
   const ret: Array<TrackInfo> = [];
 
   for (let batch of batches) {
     const ids = batch.map(t => t.track.id);
     const url = `${API_ROOT}/audio-features/?ids=${ids.join(",")}`;
-    const { audio_features } = await rateLimitedRequest<{"audio_features": AudioFeatures[]}>(url, accessToken, cancelToken);
+    const { audio_features } = await getOne<{"audio_features": AudioFeatures[]}>(url, accessToken, cancelToken);
     for (let i = 0; i < batch.length; i++) {
       ret.push({...batch[i].track, ...audio_features[i]});
     }
