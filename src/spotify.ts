@@ -39,7 +39,8 @@ function accessTokenToHeader(accessToken: string): { "Authorization": string } {
 async function rateLimitedRequest<T>(requestConfig: AxiosRequestConfig, maxRetry: number = 3): Promise<T> {
   for (let i = 0; i < maxRetry; i++) {
     const res = await axios(requestConfig);
-    if (res.status === 200) {
+    if (Math.floor(res.status / 100) === 2) {
+      // Status code is 200 - 299.
       return res.data;
     }
     if (res.status === 429) {
@@ -124,12 +125,17 @@ export async function createPlaylist(playlistName: string, trackUris: ReadonlyAr
   const me = await getMe(accessToken, cancelToken);
   const creationUrl = `${API_ROOT}/users/${me.id}/playlists`;
   const creationRes = await rateLimitedRequest<Playlist>({
+    method: "POST",
     url: creationUrl,
     headers: accessTokenToHeader(accessToken),
-    data: JSON.stringify({ name: playlistName })
+    data: JSON.stringify({
+      name: playlistName,
+      public: false
+    })
   });
   const additionUrl = `${API_ROOT}/playlists/${creationRes.id}/tracks`;
   await rateLimitedRequest({
+    method: "POST",
     url: additionUrl,
     headers: accessTokenToHeader(accessToken),
     params: {

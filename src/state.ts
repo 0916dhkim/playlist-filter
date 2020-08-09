@@ -27,7 +27,8 @@ export type PersonalPageState = {
 
 export type ExportPageState = {
   page: "export",
-  tracks: ReadonlyArray<FullTrack>
+  tracks: ReadonlyArray<FullTrack>,
+  newPlaylistName: string
 } & SessionState
 
 export type ApplicationState = PersonalPageState | LandingPageState | ExportPageState;

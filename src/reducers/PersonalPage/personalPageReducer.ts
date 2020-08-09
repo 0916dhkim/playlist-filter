@@ -23,7 +23,8 @@ function personalPageReducer(state: PersonalPageState, action: Action): Applicat
       return {
         page: "export",
         tracks: action.tracks,
-        session: state.session
+        session: state.session,
+        newPlaylistName: ""
       };
     default:
       return composedReducer(state, action);

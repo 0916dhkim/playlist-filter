@@ -45,3 +45,7 @@ export type Action = {
   type: "GO_TO_EXPORT_PAGE",
   tracks: ReadonlyArray<FullTrack>
 }
+| {
+  type: "SET_NEW_PLAYLIST_NAME",
+  value: string
+}

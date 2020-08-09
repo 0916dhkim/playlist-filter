@@ -21,4 +21,9 @@ export const API_ROOT = "https://api.spotify.com/v1";
 /**
  * Space separated list of scopes.
  */
-export const REQUESTED_SCOPES = "playlist-read-private"
+export const REQUESTED_SCOPES = [
+  "playlist-read-private",
+  "playlist-modify-private",
+  "playlist-modify-public"
+].join(" ");
+
