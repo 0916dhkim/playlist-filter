@@ -17,7 +17,7 @@ export function Login() {
     <div>
       {session
         ? <button onClick={handleSignOut}>Sign Out</button>
-        : <button onClick={signIn}>Sign In</button>
+        : <button onClick={signIn}>Sign In With Spotify</button>
       }
     </div>
   );
