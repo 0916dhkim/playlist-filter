@@ -108,3 +108,32 @@ export async function getPlaylistTracks(playlistId: string, accessToken: string,
 
   return ret;
 }
+
+/**
+ * Create a new Spotify playlist and add tracks.
+ * @param playlistName Name of new playlist.
+ * @param trackUris Spotify URI of tracks to be added.
+ * @param accessToken Spotify access token.
+ * @param cancelToken Axios cancel token.
+ */
+export async function createPlaylist(playlistName: string, trackUris: ReadonlyArray<string>, accessToken: string, cancelToken: CancelToken): Promise<void> {
+  if (trackUris.length > 100) {
+    throw new Error("Cannot add more than 100 items at a time.");
+  }
+
+  const me = await getMe(accessToken, cancelToken);
+  const creationUrl = `${API_ROOT}/users/${me.id}/playlists`;
+  const creationRes = await rateLimitedRequest<Playlist>({
+    url: creationUrl,
+    headers: accessTokenToHeader(accessToken),
+    data: JSON.stringify({ name: playlistName })
+  });
+  const additionUrl = `${API_ROOT}/playlists/${creationRes.id}/tracks`;
+  await rateLimitedRequest({
+    url: additionUrl,
+    headers: accessTokenToHeader(accessToken),
+    params: {
+      uris: trackUris.join(",")
+    }
+  });
+}
