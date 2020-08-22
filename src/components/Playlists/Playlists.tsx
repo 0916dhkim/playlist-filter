@@ -1,9 +1,11 @@
+import { ListItem, Paper } from "@material-ui/core";
 import React, { useEffect } from "react";
-import axios from "axios";
-import { getUserPlaylists, getPlaylistTracks } from "../../spotify";
-import { useSelector, useDispatch } from "react-redux";
+import { getPlaylistTracks, getUserPlaylists } from "../../spotify";
+import { useDispatch, useSelector } from "react-redux";
+
 import { ApplicationDispatch } from "../../store";
 import { PersonalPageState } from "../../state";
+import axios from "axios";
 import style from "./Playlists.module.scss";
 import { useRefreshedSession } from "../../hooks/useRefreshedSession";
 
@@ -56,19 +58,16 @@ export default function() {
   }
 
   return (
-    <div>
-      <h3>Playlists</h3>
-      <div className={style.container}>
-        {playlists.map(playlist => (
-          <div
-            key={playlist.id}
-            className={style.item}
-            onClick={() => selectPlaylist(playlist.id)}
-          >
-            {playlist.name}
-          </div>
-        ))}
-      </div>
-    </div>
+    <Paper className={style.container}>
+      {playlists.map(playlist => (
+        <div
+          key={playlist.id}
+          className={style.item}
+          onClick={() => selectPlaylist(playlist.id)}
+        >
+          {playlist.name}
+        </div>
+      ))}
+    </Paper>
   );
 }

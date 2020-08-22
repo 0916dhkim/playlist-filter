@@ -1,11 +1,13 @@
+import { Button, ButtonGroup } from "@material-ui/core";
 import React, { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 import { ApplicationDispatch } from "../../store";
-import { PersonalPageState } from "../../state";
-import { filterTracks } from "../../filterTracks";
-import RangeInput from "../RangeInput/RangeInput";
-import style from "./Controls.module.scss";
 import { AudioFeatureKey } from "../../spotify_types";
+import { PersonalPageState } from "../../state";
+import RangeInput from "../RangeInput/RangeInput";
+import { filterTracks } from "../../filterTracks";
+import style from "./Controls.module.scss";
 
 type NormalizedRangeInputProps = {
   feature: AudioFeatureKey
@@ -64,8 +66,7 @@ function Controls() {
 
   return (
     <div>
-      <h3>Controls</h3>
-      <div className={style.container}>
+      <div className={style.grid}>
         <RangeInput
           label="Tempo (BPM)"
           lowerLimit={minTrackTempo}
@@ -85,12 +86,22 @@ function Controls() {
           />
         ))}
       </div>
-      <button onClick={() => dispatch({ type: "RESET_AUDIO_FEATURE_RANGE" })}>
-        Reset Filters
-      </button>
-      <button onClick={handleExport}>
-        Export Tracks
-      </button>
+      <ButtonGroup
+        className={style.buttongroup}
+        variant={"contained"}
+        color={"primary"}
+      >
+        <Button
+          onClick={() => dispatch({ type: "RESET_AUDIO_FEATURE_RANGE" })}
+        >
+          Reset Filters
+        </Button>
+        <Button
+          onClick={handleExport}
+        >
+          Export Tracks
+        </Button>
+      </ButtonGroup>
     </div>
   );
 }

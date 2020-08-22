@@ -1,7 +1,12 @@
 .container {
-  border: 1px solid black;
+  margin: 1em;
+}
+
+.item {
+  padding: 0.2em;
 }
 
 .item:hover {
   background: #eee;
+  cursor: pointer;
 }
