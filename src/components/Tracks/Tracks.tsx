@@ -1,8 +1,10 @@
+import { Paper, Table, TableBody, TableCell, TableHead, TableRow } from "@material-ui/core";
 import React, { useMemo } from "react";
-import { useSelector } from "react-redux";
+
 import { PersonalPageState } from "../../state";
 import { filterTracks } from "../../filterTracks";
 import style from "./Tracks.module.scss";
+import { useSelector } from "react-redux";
 
 export default function() {
   const tracks = useSelector((state: PersonalPageState) => state.tracks);
@@ -19,42 +21,42 @@ export default function() {
   );
 
   return (
-    <div>
+    <Paper square>
       <h3>Tracks ({filteredTracks.length})</h3>
-      <table className={style.table}>
-        <thead>
-          <tr className={style.header}>
-            <th>Title</th>
-            <th>Artists</th>
-            <th>Tempo</th>
-            <th>Acousticness</th>
-            <th>Danceability</th>
-            <th>Energy</th>
-            <th>Instrumentalness</th>
-            <th>Liveness</th>
-            <th>Loudness</th>
-            <th>Speechiness</th>
-            <th>Valence</th>
-          </tr>
-        </thead>
-        <tbody>
+      <Table stickyHeader className={style.table}>
+        <TableHead className={style.header}>
+          <TableRow>
+            <TableCell>Title</TableCell>
+            <TableCell>Artists</TableCell>
+            <TableCell>Tempo</TableCell>
+            <TableCell>Acousticness</TableCell>
+            <TableCell>Danceability</TableCell>
+            <TableCell>Energy</TableCell>
+            <TableCell>Instrumentalness</TableCell>
+            <TableCell>Liveness</TableCell>
+            <TableCell>Loudness</TableCell>
+            <TableCell>Speechiness</TableCell>
+            <TableCell>Valence</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
           {filteredTracks.map(track => (
-            <tr key={track.id} className={style.row}>
-              <td>{track.name}</td>
-              <td>{track.artists.map(artist => artist.name).join(",")}</td>
-              <td>{track.tempo}</td>
-              <td>{track.acousticness}</td>
-              <td>{track.danceability}</td>
-              <td>{track.energy}</td>
-              <td>{track.instrumentalness}</td>
-              <td>{track.liveness}</td>
-              <td>{track.loudness}</td>
-              <td>{track.speechiness}</td>
-              <td>{track.valence}</td>
-            </tr>
+            <TableRow key={track.id}>
+              <TableCell>{track.name}</TableCell>
+              <TableCell>{track.artists.map(artist => artist.name).join(",")}</TableCell>
+              <TableCell>{track.tempo}</TableCell>
+              <TableCell>{track.acousticness}</TableCell>
+              <TableCell>{track.danceability}</TableCell>
+              <TableCell>{track.energy}</TableCell>
+              <TableCell>{track.instrumentalness}</TableCell>
+              <TableCell>{track.liveness}</TableCell>
+              <TableCell>{track.loudness}</TableCell>
+              <TableCell>{track.speechiness}</TableCell>
+              <TableCell>{track.valence}</TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </TableBody>
+      </Table>
+    </Paper>
   );
 }

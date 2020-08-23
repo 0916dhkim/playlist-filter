@@ -1,4 +1,4 @@
-import { ListItem, Paper } from "@material-ui/core";
+import { List, ListItem, Paper } from "@material-ui/core";
 import React, { useEffect } from "react";
 import { getPlaylistTracks, getUserPlaylists } from "../../spotify";
 import { useDispatch, useSelector } from "react-redux";
@@ -59,15 +59,17 @@ export default function() {
 
   return (
     <Paper className={style.container}>
-      {playlists.map(playlist => (
-        <div
-          key={playlist.id}
-          className={style.item}
-          onClick={() => selectPlaylist(playlist.id)}
-        >
-          {playlist.name}
-        </div>
-      ))}
+      <List dense>
+        {playlists.map(playlist => (
+          <ListItem
+            key={playlist.id}
+            button
+            onClick={() => selectPlaylist(playlist.id)}
+          >
+            {playlist.name}
+          </ListItem>
+        ))}
+      </List>
     </Paper>
   );
 }

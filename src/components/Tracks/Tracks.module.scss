@@ -1,38 +1,11 @@
 .table {
-  border-spacing: 0 0.2em;
   /* Break word anywhere if needed. */
   overflow-wrap: break-word;
   /* Layout */
   table-layout: fixed;
-  width: 100%;
+  // width: 100%;
 }
 
 .header th {
-  background: black;
-  color: white;
   text-align: left;
-  padding: 0.5em 1em;
-  /* Sticky header */
-  position: sticky;
-  top: 0;
-}
-
-/* Flip animation */
-@keyframes flip {
-  0% {
-    transform: rotateX(360deg);
-  }
-
-  100% {
-    transform: rotateX(0deg);
-  }
-}
-
-.row {
-  animation: flip 1s;
-  background: #eee;
-}
-
-.row td {
-  padding: 0.5em 1em;
 }
