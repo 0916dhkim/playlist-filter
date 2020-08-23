@@ -2,18 +2,24 @@ import './index.scss';
 
 import * as serviceWorker from './serviceWorker';
 
+import { CssBaseline, StylesProvider } from "@material-ui/core";
+
 import App from './App';
+import { MaterialThemeProvider } from "./components/MaterialTheme/MaterialTheme";
 import { Provider } from "react-redux";
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { StylesProvider } from "@material-ui/core";
 import { store } from "./store";
 
 ReactDOM.render(
   <React.StrictMode>
     <Provider store={store}>
       <StylesProvider injectFirst>
-        <App />
+        <MaterialThemeProvider>
+          <CssBaseline>
+            <App />
+          </CssBaseline>
+        </MaterialThemeProvider>
       </StylesProvider>
     </Provider>
   </React.StrictMode>,

@@ -19,8 +19,8 @@ export function Login() {
     <div>
       {session
         ? <Button
-            variant={"contained"}
-            color={"secondary"}
+            variant={"outlined"}
+            color={"primary"}
             onClick={handleSignOut}
           >
             Sign Out
