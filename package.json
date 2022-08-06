@@ -2,5 +2,8 @@
   "name": "spotify-filter",
   "homepage": "https://0916dhkim.github.io/spotify-filter",
   "version": "0.1.0",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "firebase": "^9.9.2"
+  }
 }
