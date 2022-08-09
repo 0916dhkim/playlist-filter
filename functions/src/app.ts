@@ -9,14 +9,17 @@ const app = express();
 app.use(validateFirebaseIdToken);
 
 app.get("/login", (req, res) => {
-  res.redirect(
+  const loginUrl =
     "https://accounts.spotify.com/authorize?" +
-      new URLSearchParams({
-        client_id: env.SPOTIFY_CLIENT_ID,
-        response_type: "code",
-        redirect_uri: env.SPOTIFY_LOGIN_REDIRECT_URI,
-      }).toString()
-  );
+    new URLSearchParams({
+      client_id: env.SPOTIFY_CLIENT_ID,
+      response_type: "code",
+      redirect_uri: env.SPOTIFY_LOGIN_REDIRECT_URI,
+    }).toString();
+
+  return res.json({
+    url: loginUrl,
+  });
 });
 
 app.get("/auth-callback", async (req, res, next) => {
