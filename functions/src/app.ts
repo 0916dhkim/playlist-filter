@@ -16,7 +16,7 @@ app.get("/spotify-login-url", (req, res) => {
     new URLSearchParams({
       client_id: env.SPOTIFY_CLIENT_ID,
       response_type: "code",
-      redirect_uri: env.SPOTIFY_LOGIN_REDIRECT_URI,
+      redirect_uri: `${env.APP_BASE_URL}/callback`,
     }).toString();
 
   return res.json({

@@ -12,7 +12,7 @@ export async function getToken(code: string) {
   const form = new FormData();
   form.append("grant_type", "authorization_code");
   form.append("code", code);
-  form.append("redirect_uri", env.SPOTIFY_LOGIN_REDIRECT_URI);
+  form.append("redirect_uri", `${env.APP_BASE_URL}/callback`);
   const response = await axios.post(
     "https://accounts.spotify.com/api/token",
     form,

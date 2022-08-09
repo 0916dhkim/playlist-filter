@@ -19,7 +19,4 @@ export default {
   get SPOTIFY_CLIENT_SECRET() {
     return requireEnv("SPOTIFY_CLIENT_SECRET");
   },
-  get SPOTIFY_LOGIN_REDIRECT_URI() {
-    return requireEnv("SPOTIFY_LOGIN_REDIRECT_URI");
-  },
 };
