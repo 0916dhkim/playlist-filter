@@ -24,12 +24,9 @@ app.get("/spotify-login-url", (req, res) => {
   });
 });
 
-app.get("/auth-callback", async (req, res, next) => {
+app.post("/connect-spotify", async (req, res, next) => {
   try {
-    const { code, error } = req.query;
-    if (typeof error === "string") {
-      return next(error);
-    }
+    const { code } = req.body;
     if (typeof code !== "string") {
       return res.status(400).send("No code provided");
     }
@@ -44,7 +41,7 @@ app.get("/auth-callback", async (req, res, next) => {
       { merge: true }
     );
 
-    res.redirect(env.APP_BASE_URL);
+    return res.redirect(env.APP_BASE_URL);
   } catch (err) {
     next(err);
   }
