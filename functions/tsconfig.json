@@ -3,6 +3,7 @@
     "module": "commonjs",
     "esModuleInterop": true,
     "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
     "outDir": "lib",
     "sourceMap": true,
