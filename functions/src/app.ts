@@ -1,3 +1,4 @@
+import cors from "cors";
 import env from "./env";
 import express from "express";
 import { getToken } from "./spotify";
@@ -6,6 +7,7 @@ import { validateFirebaseIdToken } from "./middleware";
 
 const app = express();
 
+app.use(cors());
 app.use(validateFirebaseIdToken);
 
 app.get("/login", (req, res) => {

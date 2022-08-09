@@ -1,10 +1,12 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@types/cors': ^2.8.12
   '@types/express': ^4.17.13
   '@typescript-eslint/eslint-plugin': ^5.12.0
   '@typescript-eslint/parser': ^5.12.0
   axios: ^0.27.2
+  cors: ^2.8.5
   eslint: ^8.9.0
   eslint-config-prettier: ^8.5.0
   eslint-plugin-import: ^2.25.4
@@ -19,12 +21,14 @@ specifiers:
 
 dependencies:
   axios: 0.27.2
+  cors: 2.8.5
   express: 4.18.1
   firebase-admin: 10.3.0_@firebase+app-types@0.7.0
   firebase-functions: 3.22.0_firebase-admin@10.3.0
   nanoid: 4.0.0
 
 devDependencies:
+  '@types/cors': 2.8.12
   '@types/express': 4.17.13
   '@typescript-eslint/eslint-plugin': 5.32.0_iosr3hrei2tubxveewluhu5lhy
   '@typescript-eslint/parser': 5.32.0_qugx7qdu5zevzvxaiqyxfiwquq
