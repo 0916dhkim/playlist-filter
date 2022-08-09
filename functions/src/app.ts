@@ -10,7 +10,7 @@ const app = express();
 app.use(cors());
 app.use(validateFirebaseIdToken);
 
-app.get("/login", (req, res) => {
+app.get("/spotify-login-url", (req, res) => {
   const loginUrl =
     "https://accounts.spotify.com/authorize?" +
     new URLSearchParams({
