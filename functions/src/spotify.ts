@@ -9,7 +9,7 @@ interface TokenResponse {
 }
 
 export async function getToken(code: string) {
-  const form = new FormData();
+  const form = new URLSearchParams();
   form.append("grant_type", "authorization_code");
   form.append("code", code);
   form.append("redirect_uri", `${env.APP_BASE_URL}/callback`);

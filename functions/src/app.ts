@@ -41,9 +41,9 @@ app.post("/connect-spotify", async (req, res, next) => {
       { merge: true }
     );
 
-    return res.redirect(env.APP_BASE_URL);
+    return res.sendStatus(200);
   } catch (err) {
-    next(err);
+    return next(err);
   }
 });
 
