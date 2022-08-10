@@ -1,6 +1,8 @@
 import {
+  User,
   createUserWithEmailAndPassword,
   getAuth,
+  onAuthStateChanged as onAuthStateChangedOriginal,
   signInWithEmailAndPassword,
 } from "firebase/auth";
 
@@ -24,4 +26,8 @@ export const registerUser = async (email: string, password: string) => {
 
 export const signIn = async (email: string, password: string) => {
   return signInWithEmailAndPassword(auth, email, password);
+};
+
+export const onAuthStateChanged = (callback: (user: User | null) => void) => {
+  return onAuthStateChangedOriginal(auth, callback);
 };

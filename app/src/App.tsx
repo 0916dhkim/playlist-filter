@@ -3,8 +3,10 @@ import { FormEvent, useState } from "react";
 import { registerUser, signIn } from "./firebase";
 
 import OAuthCallback from "./pages/OAuthCallback";
+import useFirebaseAuth from "./hooks/useFirebaseAuth";
 
 function App() {
+  const user = useFirebaseAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -16,6 +18,22 @@ function App() {
   const handleSignIn = (e: FormEvent) => {
     e.preventDefault();
     signIn(email, password);
+  };
+
+  const handleSpotify = async () => {
+    if (user == null) {
+      throw new Error("User is not logged in");
+    }
+    const response = await fetch(
+      `${import.meta.env.VITE_BACKEND_BASE_URL}/api/spotify-login-url`,
+      {
+        headers: {
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+      }
+    );
+    const { url } = await response.json();
+    window.location.href = url;
   };
 
   return (
@@ -61,6 +79,7 @@ function App() {
           </label>
           <button>Login</button>
         </form>
+        <button onClick={handleSpotify}>Connect Spotify</button>
         <Routes>
           <Route path="/callback" element={<OAuthCallback />} />
         </Routes>
