@@ -1,25 +1,13 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { FormEvent, useState } from "react";
-import { registerUser, signIn } from "./firebase";
 
+import Home from "./pages/Home";
 import OAuthCallback from "./pages/OAuthCallback";
+import Register from "./pages/Register";
+import SignIn from "./pages/SignIn";
 import useFirebaseAuth from "./hooks/useFirebaseAuth";
 
 function App() {
   const user = useFirebaseAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleRegister = (e: FormEvent) => {
-    e.preventDefault();
-    registerUser(email, password);
-  };
-
-  const handleSignIn = (e: FormEvent) => {
-    e.preventDefault();
-    signIn(email, password);
-  };
-
   const handleSpotify = async () => {
     if (user == null) {
       throw new Error("User is not logged in");
@@ -38,52 +26,12 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div>
-        <form onSubmit={handleRegister}>
-          <h1>Register</h1>
-          <label>
-            Email:
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </label>
-          <label>
-            Password:
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </label>
-          <button>Register</button>
-        </form>
-        <form onSubmit={handleSignIn}>
-          <h1>Login</h1>
-          <label>
-            Email:
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </label>
-          <label>
-            Password:
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </label>
-          <button>Login</button>
-        </form>
-        <button onClick={handleSpotify}>Connect Spotify</button>
-        <Routes>
-          <Route path="/callback" element={<OAuthCallback />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/register" element={<Register />} />
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/callback" element={<OAuthCallback />} />
+        <Route index element={<Home />} />
+      </Routes>
     </BrowserRouter>
   );
 }
