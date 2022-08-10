@@ -1,27 +1,27 @@
 import { ReactElement, useEffect } from "react";
 
-import useFirebaseAuth from "../hooks/useFirebaseAuth";
+import useFirebaseIdToken from "../hooks/useFirebaseIdToken";
 import { useNavigate } from "react-router-dom";
 
 export default function Home(): ReactElement {
-  const user = useFirebaseAuth();
+  const idToken = useFirebaseIdToken();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user == null) {
+    if (idToken == null) {
       navigate("/signin");
     }
-  }, [user]);
+  }, [idToken]);
 
   const handleSpotify = async () => {
-    if (user == null) {
+    if (idToken == null) {
       throw new Error("User is not logged in");
     }
     const response = await fetch(
       `${import.meta.env.VITE_BACKEND_BASE_URL}/api/spotify-login-url`,
       {
         headers: {
-          Authorization: `Bearer ${await user.getIdToken()}`,
+          Authorization: `Bearer ${idToken}`,
         },
       }
     );
