@@ -1,11 +1,40 @@
+import { getToken, requestTokenRefresh } from "./spotify";
+
 import axios from "axios";
 import cors from "cors";
 import env from "./env";
 import express from "express";
-import { getToken } from "./spotify";
 import { spotifyAuthCollection } from "./firebase";
 import { validateFirebaseIdToken } from "./middleware";
 import z from "zod";
+
+/**
+ * Get an access token that is not expired.
+ */
+async function getValidToken(uid: string) {
+  const docRef = spotifyAuthCollection.doc(uid);
+  const doc = await docRef.get();
+  const now = Math.floor(new Date().getTime() / 1000);
+  const { accessToken, refreshToken, expiresAt } = z
+    .object({
+      accessToken: z.string(),
+      refreshToken: z.string(),
+      expiresAt: z.number(),
+    })
+    .parse(doc.data());
+  if (expiresAt <= now) {
+    const refreshed = await requestTokenRefresh(refreshToken);
+    await docRef.set(
+      {
+        accessToken: refreshed.accessToken,
+        expiresAt: now + refreshed.expiresIn,
+      },
+      { merge: true }
+    );
+    return refreshed.accessToken;
+  }
+  return accessToken;
+}
 
 const app = express();
 
@@ -35,11 +64,12 @@ app.post("/connect-spotify", async (req, res, next) => {
     }
 
     const { accessToken, refreshToken, expiresIn } = await getToken(code);
+    const now = Math.floor(new Date().getTime() / 1000);
     spotifyAuthCollection.doc(req.user.uid).set(
       {
         accessToken,
         refreshToken,
-        expiresIn,
+        expiresAt: now + expiresIn,
       },
       { merge: true }
     );
@@ -52,12 +82,7 @@ app.post("/connect-spotify", async (req, res, next) => {
 
 app.get("/playlists", async (req, res, next) => {
   try {
-    const doc = await spotifyAuthCollection.doc(req.user.uid).get();
-    const { accessToken } = z
-      .object({
-        accessToken: z.string(),
-      })
-      .parse(doc.data());
+    const accessToken = await getValidToken(req.user.uid);
 
     const response = await axios.get(
       "https://api.spotify.com/v1/me/playlists",
@@ -87,6 +112,55 @@ app.get("/playlists", async (req, res, next) => {
         id: playlist.id,
         name: playlist.name,
       })),
+    });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+app.get("/playlists/:id/tracks", async (req, res, next) => {
+  try {
+    const accessToken = await getValidToken(req.user.uid);
+
+    const response = await axios.get(
+      `https://api.spotify.com/v1/playlists/${req.params.id}/tracks`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        params: {
+          limit: 50,
+        },
+      }
+    );
+
+    const { items } = z
+      .object({
+        items: z.array(
+          z.object({
+            track: z.object({
+              id: z.string(),
+              name: z.string(),
+              duration_ms: z.number(),
+              preview_url: z.nullable(z.string()),
+              album: z.object({
+                id: z.string(),
+                name: z.string(),
+                images: z.array(
+                  z.object({
+                    url: z.string(),
+                    height: z.number(),
+                    width: z.number(),
+                  })
+                ),
+              }),
+            }),
+          })
+        ),
+      })
+      .parse(response.data);
+    return res.json({
+      tracks: items.map((item) => item.track),
     });
   } catch (err) {
     return next(err);
