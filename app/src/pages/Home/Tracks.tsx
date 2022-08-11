@@ -3,17 +3,19 @@ import useFirebaseIdToken from "../../hooks/useFirebaseIdToken";
 import { useQuery } from "@tanstack/react-query";
 import z from "zod";
 
-type PlaylistsProps = {
-  onSelect: (playlistId: string) => void;
+type TracksProps = {
+  playlistId: string;
 };
 
-async function getPlaylists(idToken?: string) {
+async function getTracks(playlistId: string, idToken?: string) {
   if (idToken == null) {
     throw new Error("No token");
   }
 
   const response = await fetch(
-    `${import.meta.env.VITE_BACKEND_BASE_URL}/api/playlists`,
+    `${
+      import.meta.env.VITE_BACKEND_BASE_URL
+    }/api/playlists/${playlistId}/tracks`,
     {
       headers: {
         Authorization: `Bearer ${idToken}`,
@@ -23,7 +25,7 @@ async function getPlaylists(idToken?: string) {
 
   return z
     .object({
-      playlists: z.array(
+      tracks: z.array(
         z.object({
           id: z.string(),
           name: z.string(),
@@ -33,16 +35,16 @@ async function getPlaylists(idToken?: string) {
     .parse(await response.json());
 }
 
-export default function Playlists({ onSelect }: PlaylistsProps): ReactElement {
+export default function Tracks({ playlistId }: TracksProps): ReactElement {
   const idToken = useFirebaseIdToken();
-  const result = useQuery(["playlists", idToken], () => getPlaylists(idToken));
+  const result = useQuery(["tracks", playlistId, idToken], () =>
+    getTracks(playlistId, idToken)
+  );
   return (
     <ul>
       {result.data
-        ? result.data.playlists.map((playlist) => (
-            <li key={playlist.id} onClick={() => onSelect(playlist.id)}>
-              {playlist.name}
-            </li>
+        ? result.data.tracks.map((track) => (
+            <li key={track.id}>{track.name}</li>
           ))
         : null}
     </ul>
