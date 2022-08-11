@@ -43,8 +43,8 @@ export default function Tracks({ playlistId }: TracksProps): ReactElement {
   return (
     <ul>
       {result.data
-        ? result.data.tracks.map((track) => (
-            <li key={track.id}>{track.name}</li>
+        ? result.data.tracks.map((track, index) => (
+            <li key={`${index}-${track.id}`}>{track.name}</li>
           ))
         : null}
     </ul>
