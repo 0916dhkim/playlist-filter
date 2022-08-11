@@ -1,6 +1,7 @@
 import { ReactElement, useEffect } from "react";
 
-import useFirebaseIdToken from "../hooks/useFirebaseIdToken";
+import Playlists from "./Playlists";
+import useFirebaseIdToken from "../../hooks/useFirebaseIdToken";
 import { useNavigate } from "react-router-dom";
 
 export default function Home(): ReactElement {
@@ -29,5 +30,11 @@ export default function Home(): ReactElement {
     window.location.href = url;
   };
 
-  return <button onClick={handleSpotify}>Connect Spotify</button>;
+  return (
+    <div>
+      <button onClick={handleSpotify}>Connect Spotify</button>
+      <h1>Playlists</h1>
+      <Playlists />
+    </div>
+  );
 }

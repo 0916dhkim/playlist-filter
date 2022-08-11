@@ -9,10 +9,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-query": "^4.0.10",
     "firebase": "^9.9.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.3.0"
+    "react-router-dom": "^6.3.0",
+    "zod": "^3.18.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.15",
