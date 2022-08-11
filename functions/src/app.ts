@@ -1,9 +1,11 @@
+import axios from "axios";
 import cors from "cors";
 import env from "./env";
 import express from "express";
 import { getToken } from "./spotify";
 import { spotifyAuthCollection } from "./firebase";
 import { validateFirebaseIdToken } from "./middleware";
+import z from "zod";
 
 const app = express();
 
@@ -42,6 +44,49 @@ app.post("/connect-spotify", async (req, res, next) => {
     );
 
     return res.sendStatus(200);
+  } catch (err) {
+    return next(err);
+  }
+});
+
+app.get("/playlists", async (req, res, next) => {
+  try {
+    const doc = await spotifyAuthCollection.doc(req.user.uid).get();
+    const { accessToken } = z
+      .object({
+        accessToken: z.string(),
+      })
+      .parse(doc.data());
+
+    const response = await axios.get(
+      "https://api.spotify.com/v1/me/playlists",
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        params: {
+          limit: 50,
+        },
+      }
+    );
+
+    const { items } = z
+      .object({
+        items: z.array(
+          z.object({
+            id: z.string(),
+            name: z.string(),
+          })
+        ),
+      })
+      .parse(response.data);
+
+    return res.json({
+      playlists: items.map((playlist) => ({
+        id: playlist.id,
+        name: playlist.name,
+      })),
+    });
   } catch (err) {
     return next(err);
   }
