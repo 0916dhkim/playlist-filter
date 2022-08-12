@@ -1,8 +1,9 @@
 import { ReactElement, useEffect, useState } from "react";
-import { getIdToken, useFirebaseAuthState } from "../../firebase";
 
+import ConnectSpotifyButton from "../../components/ConnectSpotifyButton";
 import Playlists from "./Playlists";
 import Tracks from "./Tracks";
+import { useFirebaseAuthState } from "../../firebase";
 import { useNavigate } from "react-router-dom";
 
 export default function Home(): ReactElement {
@@ -23,23 +24,9 @@ export default function Home(): ReactElement {
     }
   }, [hasAuth]);
 
-  const handleSpotify = async () => {
-    const idToken = await getIdToken();
-    const response = await fetch(
-      `${import.meta.env.VITE_BACKEND_BASE_URL}/api/spotify-login-url`,
-      {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-      }
-    );
-    const { url } = await response.json();
-    window.location.href = url;
-  };
-
   return (
     <div>
-      <button onClick={handleSpotify}>Connect Spotify</button>
+      <ConnectSpotifyButton />
       <h1>Playlists</h1>
       <Playlists onSelect={handlePlaylistSelect} />
       {selectedPlaylistId ? (

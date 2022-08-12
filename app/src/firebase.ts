@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 
 import { initializeApp } from "firebase/app";
 import invariant from "tiny-invariant";
+import z from "zod";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -28,6 +29,25 @@ export const registerUser = async (email: string, password: string) => {
 
 export const signIn = async (email: string, password: string) => {
   return signInWithEmailAndPassword(auth, email, password);
+};
+
+export const getSpotifyLoginUrl = async () => {
+  const idToken = await getIdToken();
+  const response = await fetch(
+    `${import.meta.env.VITE_BACKEND_BASE_URL}/api/spotify-login-url`,
+    {
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+      },
+    }
+  );
+  const { url } = z
+    .object({
+      url: z.string(),
+    })
+    .parse(await response.json());
+
+  return url;
 };
 
 export const connectSpotify = async (code: string) => {

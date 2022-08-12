@@ -3,6 +3,7 @@ lockfileVersion: 5.4
 specifiers:
   '@tanstack/react-query': ^4.0.10
   '@testing-library/react': ^13.3.0
+  '@testing-library/user-event': ^14.4.3
   '@types/react': ^18.0.15
   '@types/react-dom': ^18.0.6
   '@vitejs/plugin-react': ^2.0.0
@@ -28,6 +29,7 @@ dependencies:
 
 devDependencies:
   '@testing-library/react': 13.3.0_biqbaboplfbrettd7655fr4n2y
+  '@testing-library/user-event': 14.4.3_wl4iynrlixafokvgqnhzlvigei
   '@types/react': 18.0.17
   '@types/react-dom': 18.0.6
   '@vitejs/plugin-react': 2.0.0_vite@3.0.4
@@ -957,6 +959,15 @@ packages:
       '@types/react-dom': 18.0.6
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
+    dev: true
+
+  /@testing-library/user-event/14.4.3_wl4iynrlixafokvgqnhzlvigei:
+    resolution: {integrity: sha512-kCUc5MEwaEMakkO5x7aoD+DLi02ehmEM2QCGWvNqAS1dV/fAvORWEjnjsEIvml59M7Y5kCkWN6fCCyPOe8OL6Q==}
+    engines: {node: '>=12', npm: '>=6'}
+    peerDependencies:
+      '@testing-library/dom': '>=7.21.4'
+    dependencies:
+      '@testing-library/dom': 8.17.1
     dev: true
 
   /@tootallnate/once/2.0.0:
