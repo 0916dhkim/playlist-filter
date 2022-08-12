@@ -1,12 +1,12 @@
 import { ReactElement, useEffect, useState } from "react";
+import { getIdToken, useFirebaseAuthState } from "../../firebase";
 
 import Playlists from "./Playlists";
 import Tracks from "./Tracks";
-import useFirebaseIdToken from "../../hooks/useFirebaseIdToken";
 import { useNavigate } from "react-router-dom";
 
 export default function Home(): ReactElement {
-  const idToken = useFirebaseIdToken();
+  const hasAuth = useFirebaseAuthState();
   const navigate = useNavigate();
 
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(
@@ -18,15 +18,13 @@ export default function Home(): ReactElement {
   };
 
   useEffect(() => {
-    if (idToken == null) {
+    if (!hasAuth) {
       navigate("/signin");
     }
-  }, [idToken]);
+  }, [hasAuth]);
 
   const handleSpotify = async () => {
-    if (idToken == null) {
-      throw new Error("User is not logged in");
-    }
+    const idToken = await getIdToken();
     const response = await fetch(
       `${import.meta.env.VITE_BACKEND_BASE_URL}/api/spotify-login-url`,
       {

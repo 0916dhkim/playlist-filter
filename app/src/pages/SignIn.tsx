@@ -1,11 +1,9 @@
 import { FormEvent, ReactElement, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
-import { signIn } from "../firebase";
-import useFirebaseIdToken from "../hooks/useFirebaseIdToken";
+import { signIn, useFirebaseAuthState } from "../firebase";
 
 export default function SignIn(): ReactElement {
-  const user = useFirebaseIdToken();
+  const hasAuth = useFirebaseAuthState();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -16,10 +14,10 @@ export default function SignIn(): ReactElement {
   };
 
   useEffect(() => {
-    if (user) {
+    if (hasAuth) {
       navigate("/");
     }
-  }, [user]);
+  }, [hasAuth]);
 
   return (
     <form onSubmit={handleSignIn}>

@@ -1,9 +1,11 @@
+import { getIdToken, useFirebaseAuthState } from "../firebase";
+
 import type { NavigateFunction } from "react-router-dom";
 import { useEffect } from "react";
-import useFirebaseIdToken from "../hooks/useFirebaseIdToken";
 import { useNavigate } from "react-router-dom";
 
-const connectSpotify = async (navigate: NavigateFunction, token: string) => {
+const connectSpotify = async (navigate: NavigateFunction) => {
+  const token = await getIdToken();
   const searchParams = new URLSearchParams(window.location.search);
   const code = searchParams.get("code");
   const error = searchParams.get("error");
@@ -29,16 +31,16 @@ const connectSpotify = async (navigate: NavigateFunction, token: string) => {
 
 export default function OAuthCallback() {
   const navigate = useNavigate();
-  const idToken = useFirebaseIdToken();
+  const hasAuth = useFirebaseAuthState();
   useEffect(() => {
-    if (idToken) {
-      connectSpotify(navigate, idToken);
+    if (hasAuth) {
+      connectSpotify(navigate);
     }
-  }, [idToken]);
+  }, [hasAuth]);
   return (
     <div>
       <h1>OAuthCallback</h1>
-      {idToken ? <p>Connecting spotify</p> : <p>not logged in</p>}
+      {hasAuth ? <p>Connecting spotify</p> : <p>not logged in</p>}
     </div>
   );
 }

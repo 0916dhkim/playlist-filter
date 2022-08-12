@@ -1,5 +1,5 @@
 import { ReactElement } from "react";
-import useFirebaseIdToken from "../../hooks/useFirebaseIdToken";
+import { getIdToken } from "../../firebase";
 import { useQuery } from "@tanstack/react-query";
 import z from "zod";
 
@@ -7,11 +7,8 @@ type PlaylistsProps = {
   onSelect: (playlistId: string) => void;
 };
 
-async function getPlaylists(idToken?: string) {
-  if (idToken == null) {
-    throw new Error("No token");
-  }
-
+async function getPlaylists() {
+  const idToken = await getIdToken();
   const response = await fetch(
     `${import.meta.env.VITE_BACKEND_BASE_URL}/api/playlists`,
     {
@@ -34,8 +31,7 @@ async function getPlaylists(idToken?: string) {
 }
 
 export default function Playlists({ onSelect }: PlaylistsProps): ReactElement {
-  const idToken = useFirebaseIdToken();
-  const result = useQuery(["playlists", idToken], () => getPlaylists(idToken));
+  const result = useQuery(["playlists"], () => getPlaylists());
   return (
     <ul>
       {result.data
