@@ -30,6 +30,19 @@ export const signIn = async (email: string, password: string) => {
   return signInWithEmailAndPassword(auth, email, password);
 };
 
+export const connectSpotify = async (code: string) => {
+  const token = await getIdToken();
+  await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/api/connect-spotify`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ code }),
+  });
+  return;
+};
+
 export const onAuthStateChanged = (callback: (user: User | null) => void) => {
   return onAuthStateChangedOriginal(auth, callback);
 };
