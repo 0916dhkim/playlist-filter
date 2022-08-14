@@ -1,6 +1,7 @@
 import { ReactElement, useEffect, useState } from "react";
 
 import ConnectSpotifyButton from "../../components/ConnectSpotifyButton";
+import PlaylistDetails from "./PlaylistDetails";
 import Playlists from "./Playlists";
 import Tracks from "./Tracks";
 import { useFirebaseAuthState } from "../../firebase";
@@ -31,7 +32,7 @@ export default function Home(): ReactElement {
       <Playlists onSelect={handlePlaylistSelect} />
       {selectedPlaylistId ? (
         <>
-          <h1>Tracks</h1>
+          <PlaylistDetails playlistId={selectedPlaylistId} />
           <Tracks playlistId={selectedPlaylistId} />
         </>
       ) : null}
