@@ -118,6 +118,41 @@ app.get("/playlists", async (req, res, next) => {
   }
 });
 
+app.get("/playlists/:id", async (req, res, next) => {
+  try {
+    const accessToken = await getValidToken(req.user.uid);
+
+    const response = await axios.get(
+      `https://api.spotify.com/v1/playlists/${req.params.id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        params: {
+          limit: 50,
+        },
+      }
+    );
+
+    const playlist = z
+      .object({
+        id: z.string(),
+        name: z.string(),
+        description: z.nullable(z.string()),
+        images: z.array(
+          z.object({
+            url: z.string(),
+          })
+        ),
+      })
+      .parse(response.data);
+
+    return res.json({ playlist });
+  } catch (err) {
+    return next(err);
+  }
+});
+
 app.get("/playlists/:id/tracks", async (req, res, next) => {
   try {
     const accessToken = await getValidToken(req.user.uid);
