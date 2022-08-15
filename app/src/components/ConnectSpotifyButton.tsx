@@ -1,4 +1,5 @@
 import { ReactElement } from "react";
+import { button } from "./ConnectSpotifyButton.css";
 import { getSpotifyLoginUrl } from "../firebase";
 import { redirect } from "../browser";
 
@@ -9,7 +10,11 @@ const handleSpotify = async () => {
 
 export default function ConnectSpotifyButton(): ReactElement {
   return (
-    <button data-testid="connect-spotify-button" onClick={handleSpotify}>
+    <button
+      data-testid="connect-spotify-button"
+      className={button}
+      onClick={handleSpotify}
+    >
       Connect Spotify
     </button>
   );

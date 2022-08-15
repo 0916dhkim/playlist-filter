@@ -1,5 +1,8 @@
+import { container, thumbnail } from "./PlaylistDetails.css";
+
 import { ReactElement } from "react";
 import { getIdToken } from "../../firebase";
+import { sprinkles } from "../../sprinkles.css";
 import { useQuery } from "@tanstack/react-query";
 import z from "zod";
 
@@ -43,9 +46,16 @@ export default function PlaylistDetails({
   );
 
   return (
-    <>
-      <img src={result.data?.playlist.images[0].url} />
-      <h1>{result.data?.playlist.name}</h1>
-    </>
+    <div className={container}>
+      <img src={result.data?.playlist.images[0].url} className={thumbnail} />
+      <h1
+        className={sprinkles({
+          fontWeight: "bold",
+          fontSize: "h1",
+        })}
+      >
+        {result.data?.playlist.name}
+      </h1>
+    </div>
   );
 }

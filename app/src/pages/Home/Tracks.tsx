@@ -1,5 +1,6 @@
 import { ReactElement } from "react";
 import { getIdToken } from "../../firebase";
+import { list } from "./Tracks.css";
 import { useQuery } from "@tanstack/react-query";
 import z from "zod";
 
@@ -36,12 +37,12 @@ async function getTracks(playlistId: string) {
 export default function Tracks({ playlistId }: TracksProps): ReactElement {
   const result = useQuery(["tracks", playlistId], () => getTracks(playlistId));
   return (
-    <ul>
+    <div className={list}>
       {result.data
         ? result.data.tracks.map((track, index) => (
-            <li key={`${index}-${track.id}`}>{track.name}</li>
+            <span key={`${index}-${track.id}`}>{track.name}</span>
           ))
         : null}
-    </ul>
+    </div>
   );
 }

@@ -1,5 +1,6 @@
 import { ReactElement } from "react";
 import { getIdToken } from "../../firebase";
+import { sprinkles } from "../../sprinkles.css";
 import { useQuery } from "@tanstack/react-query";
 import z from "zod";
 
@@ -33,14 +34,20 @@ async function getPlaylists() {
 export default function Playlists({ onSelect }: PlaylistsProps): ReactElement {
   const result = useQuery(["playlists"], () => getPlaylists());
   return (
-    <ul>
+    <div
+      className={sprinkles({
+        display: "flex",
+        flexDirection: "column",
+        gap: "lg",
+      })}
+    >
       {result.data
         ? result.data.playlists.map((playlist) => (
-            <li key={playlist.id} onClick={() => onSelect(playlist.id)}>
+            <span key={playlist.id} onClick={() => onSelect(playlist.id)}>
               {playlist.name}
-            </li>
+            </span>
           ))
         : null}
-    </ul>
+    </div>
   );
 }
