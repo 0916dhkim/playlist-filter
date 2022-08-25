@@ -1,5 +1,6 @@
 import axios from "axios";
 import env from "./env";
+import z from "zod";
 
 interface TokenResponse {
   access_token: string;
@@ -54,4 +55,96 @@ export async function requestTokenRefresh(refreshToken: string) {
     accessToken: tokenResponse.access_token,
     expiresIn: tokenResponse.expires_in,
   };
+}
+
+export async function getPlaylists(accessToken: string) {
+  const response = await axios.get("https://api.spotify.com/v1/me/playlists", {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    params: {
+      limit: 50,
+    },
+  });
+
+  const { items } = z
+    .object({
+      items: z.array(
+        z.object({
+          id: z.string(),
+          name: z.string(),
+        })
+      ),
+    })
+    .parse(response.data);
+  return items;
+}
+
+export async function getPlaylist(playlistId: string, accessToken: string) {
+  const response = await axios.get(
+    `https://api.spotify.com/v1/playlists/${playlistId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      params: {
+        limit: 50,
+      },
+    }
+  );
+
+  return z
+    .object({
+      id: z.string(),
+      name: z.string(),
+      description: z.nullable(z.string()),
+      images: z.array(
+        z.object({
+          url: z.string(),
+        })
+      ),
+    })
+    .parse(response.data);
+}
+
+export async function getTracks(playlistId: string, accessToken: string) {
+  const response = await axios.get(
+    `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      params: {
+        limit: 50,
+      },
+    }
+  );
+
+  const { items } = z
+    .object({
+      items: z.array(
+        z.object({
+          track: z.object({
+            id: z.string(),
+            name: z.string(),
+            duration_ms: z.number(),
+            preview_url: z.nullable(z.string()),
+            album: z.object({
+              id: z.string(),
+              name: z.string(),
+              images: z.array(
+                z.object({
+                  url: z.string(),
+                  height: z.number(),
+                  width: z.number(),
+                })
+              ),
+            }),
+          }),
+        })
+      ),
+    })
+    .parse(response.data);
+
+  return items.map((item) => item.track);
 }

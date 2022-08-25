@@ -1,6 +1,11 @@
-import { getToken, requestTokenRefresh } from "./spotify";
+import {
+  getPlaylist,
+  getPlaylists,
+  getToken,
+  getTracks,
+  requestTokenRefresh,
+} from "./spotify";
 
-import axios from "axios";
 import cors from "cors";
 import env from "./env";
 import express from "express";
@@ -85,35 +90,10 @@ app.post("/connect-spotify", async (req, res, next) => {
 app.get("/playlists", async (req, res, next) => {
   try {
     const accessToken = await getValidToken(req.user.uid);
-
-    const response = await axios.get(
-      "https://api.spotify.com/v1/me/playlists",
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        params: {
-          limit: 50,
-        },
-      }
-    );
-
-    const { items } = z
-      .object({
-        items: z.array(
-          z.object({
-            id: z.string(),
-            name: z.string(),
-          })
-        ),
-      })
-      .parse(response.data);
+    const playlists = await getPlaylists(accessToken);
 
     return res.json({
-      playlists: items.map((playlist) => ({
-        id: playlist.id,
-        name: playlist.name,
-      })),
+      playlists,
     });
   } catch (err) {
     return next(err);
@@ -123,32 +103,7 @@ app.get("/playlists", async (req, res, next) => {
 app.get("/playlists/:id", async (req, res, next) => {
   try {
     const accessToken = await getValidToken(req.user.uid);
-
-    const response = await axios.get(
-      `https://api.spotify.com/v1/playlists/${req.params.id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        params: {
-          limit: 50,
-        },
-      }
-    );
-
-    const playlist = z
-      .object({
-        id: z.string(),
-        name: z.string(),
-        description: z.nullable(z.string()),
-        images: z.array(
-          z.object({
-            url: z.string(),
-          })
-        ),
-      })
-      .parse(response.data);
-
+    const playlist = await getPlaylist(req.params.id, accessToken);
     return res.json({ playlist });
   } catch (err) {
     return next(err);
@@ -158,47 +113,8 @@ app.get("/playlists/:id", async (req, res, next) => {
 app.get("/playlists/:id/tracks", async (req, res, next) => {
   try {
     const accessToken = await getValidToken(req.user.uid);
-
-    const response = await axios.get(
-      `https://api.spotify.com/v1/playlists/${req.params.id}/tracks`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        params: {
-          limit: 50,
-        },
-      }
-    );
-
-    const { items } = z
-      .object({
-        items: z.array(
-          z.object({
-            track: z.object({
-              id: z.string(),
-              name: z.string(),
-              duration_ms: z.number(),
-              preview_url: z.nullable(z.string()),
-              album: z.object({
-                id: z.string(),
-                name: z.string(),
-                images: z.array(
-                  z.object({
-                    url: z.string(),
-                    height: z.number(),
-                    width: z.number(),
-                  })
-                ),
-              }),
-            }),
-          })
-        ),
-      })
-      .parse(response.data);
-    return res.json({
-      tracks: items.map((item) => item.track),
-    });
+    const tracks = await getTracks(req.params.id, accessToken);
+    return res.json({ tracks });
   } catch (err) {
     return next(err);
   }
