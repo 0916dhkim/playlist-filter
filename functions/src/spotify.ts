@@ -1,6 +1,7 @@
 import axios from "axios";
 import env from "./env";
 import z from "zod";
+import { zipObjectArray } from "./utils";
 
 interface TokenResponse {
   access_token: string;
@@ -146,5 +147,48 @@ export async function getTracks(playlistId: string, accessToken: string) {
     })
     .parse(response.data);
 
-  return items.map((item) => item.track);
+  const tracks = items.map((item) => item.track);
+  const audioFeatures = await getBatchAudioFeatures(
+    tracks.map((track) => track.id),
+    accessToken
+  );
+  return zipObjectArray(tracks, audioFeatures, "id");
+}
+
+async function getBatchAudioFeatures(trackIds: string[], accessToken: string) {
+  const response = await axios.get(
+    "https://api.spotify.com/v1/audio-features",
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      params: {
+        ids: trackIds.join(","),
+      },
+    }
+  );
+
+  const { audio_features } = z
+    .object({
+      audio_features: z.array(
+        z.object({
+          id: z.string(),
+          accousticness: z.optional(z.number()),
+          danceability: z.optional(z.number()),
+          duration_ms: z.optional(z.number()),
+          energy: z.optional(z.number()),
+          instrumentalness: z.optional(z.number()),
+          liveness: z.optional(z.number()),
+          loudness: z.optional(z.number()),
+          mode: z.optional(z.number()),
+          speechiness: z.optional(z.number()),
+          tempo: z.optional(z.number()),
+          time_signature: z.optional(z.number()),
+          valence: z.optional(z.number()),
+        })
+      ),
+    })
+    .parse(response.data);
+
+  return audio_features;
 }

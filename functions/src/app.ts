@@ -42,6 +42,50 @@ async function getValidToken(uid: string) {
   return accessToken;
 }
 
+const ALL_AUDIO_FEATURES = [
+  "accousticness",
+  "danceability",
+  "duration_ms",
+  "energy",
+  "instrumentalness",
+  "liveness",
+  "loudness",
+  "speechiness",
+  "tempo",
+  "valence",
+] as const;
+type AudioFeature = typeof ALL_AUDIO_FEATURES[number];
+
+function calculateAudioFeatureRanges(
+  tracks: {
+    [F in AudioFeature]?: number;
+  }[]
+) {
+  const ret: {
+    [F in AudioFeature]?: {
+      min: number;
+      max: number;
+    };
+  } = {};
+  for (const track of tracks) {
+    for (const feature of ALL_AUDIO_FEATURES) {
+      const featureValue = track[feature];
+      const originalRange = ret[feature];
+      if (featureValue !== undefined) {
+        if (originalRange === undefined) {
+          ret[feature] = { min: featureValue, max: featureValue };
+        } else {
+          ret[feature] = {
+            min: Math.min(originalRange.min, featureValue),
+            max: Math.max(originalRange.max, featureValue),
+          };
+        }
+      }
+    }
+  }
+  return ret;
+}
+
 const app = express();
 
 app.use(morgan("short"));
@@ -114,7 +158,8 @@ app.get("/playlists/:id/tracks", async (req, res, next) => {
   try {
     const accessToken = await getValidToken(req.user.uid);
     const tracks = await getTracks(req.params.id, accessToken);
-    return res.json({ tracks });
+    const audioFeatureRanges = calculateAudioFeatureRanges(tracks);
+    return res.json({ tracks, audio_feature_ranges: audioFeatureRanges });
   } catch (err) {
     return next(err);
   }
