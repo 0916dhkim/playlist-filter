@@ -4,6 +4,7 @@ import axios from "axios";
 import cors from "cors";
 import env from "./env";
 import express from "express";
+import morgan from "morgan";
 import { spotifyAuthCollection } from "./firebase";
 import { validateFirebaseIdToken } from "./middleware";
 import z from "zod";
@@ -38,6 +39,7 @@ async function getValidToken(uid: string) {
 
 const app = express();
 
+app.use(morgan("short"));
 app.use(cors());
 app.use(validateFirebaseIdToken);
 
