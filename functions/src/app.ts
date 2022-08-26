@@ -1,10 +1,12 @@
+import { assembleTracks, calculateAudioFeatureRanges } from "./domainModels";
 import {
+  getBatchAudioFeatures,
   getPlaylist,
   getPlaylists,
   getToken,
   getTracks,
   requestTokenRefresh,
-} from "./spotify";
+} from "./spotify/api";
 
 import cors from "cors";
 import env from "./env";
@@ -17,7 +19,7 @@ import z from "zod";
 /**
  * Get an access token that is not expired.
  */
-async function getValidToken(uid: string) {
+async function getValidToken(uid: string): Promise<string> {
   const docRef = spotifyAuthCollection.doc(uid);
   const doc = await docRef.get();
   const now = Math.floor(new Date().getTime() / 1000);
@@ -40,50 +42,6 @@ async function getValidToken(uid: string) {
     return refreshed.accessToken;
   }
   return accessToken;
-}
-
-const ALL_AUDIO_FEATURES = [
-  "accousticness",
-  "danceability",
-  "duration_ms",
-  "energy",
-  "instrumentalness",
-  "liveness",
-  "loudness",
-  "speechiness",
-  "tempo",
-  "valence",
-] as const;
-type AudioFeature = typeof ALL_AUDIO_FEATURES[number];
-
-function calculateAudioFeatureRanges(
-  tracks: {
-    [F in AudioFeature]?: number;
-  }[]
-) {
-  const ret: {
-    [F in AudioFeature]?: {
-      min: number;
-      max: number;
-    };
-  } = {};
-  for (const track of tracks) {
-    for (const feature of ALL_AUDIO_FEATURES) {
-      const featureValue = track[feature];
-      const originalRange = ret[feature];
-      if (featureValue !== undefined) {
-        if (originalRange === undefined) {
-          ret[feature] = { min: featureValue, max: featureValue };
-        } else {
-          ret[feature] = {
-            min: Math.min(originalRange.min, featureValue),
-            max: Math.max(originalRange.max, featureValue),
-          };
-        }
-      }
-    }
-  }
-  return ret;
 }
 
 const app = express();
@@ -157,9 +115,17 @@ app.get("/playlists/:id", async (req, res, next) => {
 app.get("/playlists/:id/tracks", async (req, res, next) => {
   try {
     const accessToken = await getValidToken(req.user.uid);
-    const tracks = await getTracks(req.params.id, accessToken);
+    const rawTracks = await getTracks(req.params.id, accessToken);
+    const audioFeatures = await getBatchAudioFeatures(
+      rawTracks.map((track) => track.id),
+      accessToken
+    );
+    const tracks = assembleTracks(rawTracks, audioFeatures);
     const audioFeatureRanges = calculateAudioFeatureRanges(tracks);
-    return res.json({ tracks, audio_feature_ranges: audioFeatureRanges });
+    return res.json({
+      tracks,
+      audioFeatureRanges,
+    });
   } catch (err) {
     return next(err);
   }

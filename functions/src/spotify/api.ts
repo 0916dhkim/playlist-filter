@@ -1,14 +1,13 @@
-import axios from "axios";
-import env from "./env";
-import z from "zod";
-import { zipObjectArray } from "./utils";
+import {
+  SpotifyApiAudioFeatures,
+  SpotifyApiPlaylist,
+  SpotifyApiPlaylistDetails,
+  SpotifyApiTrack,
+} from "./models";
 
-interface TokenResponse {
-  access_token: string;
-  refresh_token: string;
-  expires_in: number;
-  scope: string;
-}
+import axios from "axios";
+import env from "../env";
+import z from "zod";
 
 export async function getToken(code: string) {
   const form = new URLSearchParams();
@@ -27,7 +26,13 @@ export async function getToken(code: string) {
     }
   );
 
-  const tokenResponse: TokenResponse = response.data; // TODO: validate
+  const tokenResponse = z
+    .object({
+      access_token: z.string(),
+      refresh_token: z.string(),
+      expires_in: z.number(),
+    })
+    .parse(response.data);
   return {
     accessToken: tokenResponse.access_token,
     refreshToken: tokenResponse.refresh_token,
@@ -51,14 +56,21 @@ export async function requestTokenRefresh(refreshToken: string) {
     }
   );
 
-  const tokenResponse: TokenResponse = response.data; // TODO: validate
+  const tokenResponse = z
+    .object({
+      access_token: z.string(),
+      expires_in: z.number(),
+    })
+    .parse(response.data);
   return {
     accessToken: tokenResponse.access_token,
     expiresIn: tokenResponse.expires_in,
   };
 }
 
-export async function getPlaylists(accessToken: string) {
+export async function getPlaylists(
+  accessToken: string
+): Promise<SpotifyApiPlaylist[]> {
   const response = await axios.get("https://api.spotify.com/v1/me/playlists", {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -81,7 +93,10 @@ export async function getPlaylists(accessToken: string) {
   return items;
 }
 
-export async function getPlaylist(playlistId: string, accessToken: string) {
+export async function getPlaylist(
+  playlistId: string,
+  accessToken: string
+): Promise<SpotifyApiPlaylistDetails> {
   const response = await axios.get(
     `https://api.spotify.com/v1/playlists/${playlistId}`,
     {
@@ -108,7 +123,10 @@ export async function getPlaylist(playlistId: string, accessToken: string) {
     .parse(response.data);
 }
 
-export async function getTracks(playlistId: string, accessToken: string) {
+export async function getTracks(
+  playlistId: string,
+  accessToken: string
+): Promise<SpotifyApiTrack[]> {
   const response = await axios.get(
     `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
     {
@@ -148,14 +166,13 @@ export async function getTracks(playlistId: string, accessToken: string) {
     .parse(response.data);
 
   const tracks = items.map((item) => item.track);
-  const audioFeatures = await getBatchAudioFeatures(
-    tracks.map((track) => track.id),
-    accessToken
-  );
-  return zipObjectArray(tracks, audioFeatures, "id");
+  return tracks;
 }
 
-async function getBatchAudioFeatures(trackIds: string[], accessToken: string) {
+export async function getBatchAudioFeatures(
+  trackIds: string[],
+  accessToken: string
+): Promise<SpotifyApiAudioFeatures[]> {
   const response = await axios.get(
     "https://api.spotify.com/v1/audio-features",
     {
