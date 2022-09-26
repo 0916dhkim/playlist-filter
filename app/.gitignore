@@ -23,9 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-# XState typegen
-*.typegen.ts
-
 # dotenv files
 .env
 .env.local

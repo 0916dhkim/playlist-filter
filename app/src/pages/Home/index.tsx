@@ -1,6 +1,7 @@
 import { ReactElement, useEffect, useState } from "react";
 
 import ConnectSpotifyButton from "../../components/ConnectSpotifyButton";
+import FilterForm from "./FilterForm";
 import PlaylistDetails from "./PlaylistDetails";
 import Playlists from "./Playlists";
 import Tracks from "./Tracks";
@@ -12,7 +13,6 @@ import { useNavigate } from "react-router-dom";
 export default function Home(): ReactElement {
   const hasAuth = useFirebaseAuthState();
   const navigate = useNavigate();
-
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(
     null
   );
@@ -62,6 +62,10 @@ export default function Home(): ReactElement {
           })}
         >
           <PlaylistDetails playlistId={selectedPlaylistId} />
+          <FilterForm
+            key={selectedPlaylistId}
+            playlistId={selectedPlaylistId}
+          />
           <Tracks playlistId={selectedPlaylistId} />
         </div>
       ) : null}

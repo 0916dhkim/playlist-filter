@@ -1,13 +1,14 @@
 import { ReactElement } from "react";
+import { getTracks } from "../../api/queries";
 import { list } from "./Tracks.css";
-import { useTracksQuery } from "../../api/hooks";
+import { useQuery } from "@tanstack/react-query";
 
 type TracksProps = {
   playlistId: string;
 };
 
 export default function Tracks({ playlistId }: TracksProps): ReactElement {
-  const result = useTracksQuery(playlistId);
+  const result = useQuery(...getTracks(playlistId));
   return (
     <div className={list}>
       {result.data
