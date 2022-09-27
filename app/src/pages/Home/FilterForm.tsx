@@ -3,7 +3,12 @@ import {
   AudioFeature,
   AudioFeatureRanges,
 } from "../../api/types";
-import { ComponentPropsWithoutRef, ReactElement, useState } from "react";
+import {
+  ComponentPropsWithoutRef,
+  FormEventHandler,
+  ReactElement,
+  useState,
+} from "react";
 
 import AudioFeatureRangeInput from "./AudioFeatureRangeInput";
 import { getTracks } from "../../api/queries";
@@ -20,6 +25,7 @@ type FilterFormState =
     }
   | {
       initialized: true;
+      stage: "editing" | "exporting";
       inputProps: InputProps;
     };
 
@@ -44,7 +50,7 @@ function initialInputProps(audioFeatureRanges: AudioFeatureRanges) {
 
 export default function FilterForm({
   playlistId,
-}: FilterFormProps): ReactElement {
+}: FilterFormProps): ReactElement | null {
   const [state, setState] = useState<FilterFormState>({ initialized: false });
   useQuery(...getTracks(playlistId), {
     onSuccess: ({ audioFeatureRanges }) => {
@@ -53,6 +59,7 @@ export default function FilterForm({
           ? prev
           : {
               initialized: true,
+              stage: "editing",
               inputProps: initialInputProps(audioFeatureRanges),
             }
       );
@@ -77,19 +84,33 @@ export default function FilterForm({
       });
     };
 
-  return (
-    <form>
-      {state.initialized
-        ? ALL_AUDIO_FEATURES.map((feature) => state.inputProps[feature])
-            .filter(isDefined)
-            .map((props) => (
-              <AudioFeatureRangeInput
-                key={props.feature}
-                {...props}
-                onChange={handleChange(props.feature)}
-              />
-            ))
-        : null}
-    </form>
-  );
+  const handleEditingSubmit: FormEventHandler = (e) => {
+    e.preventDefault();
+    setState((prev) => {
+      if (!prev.initialized || prev.stage !== "editing") return prev;
+      return {
+        ...prev,
+        stage: "exporting",
+      };
+    });
+  };
+
+  return state.initialized ? (
+    state.stage === "editing" ? (
+      <form onSubmit={handleEditingSubmit}>
+        {ALL_AUDIO_FEATURES.map((feature) => state.inputProps[feature])
+          .filter(isDefined)
+          .map((props) => (
+            <AudioFeatureRangeInput
+              key={props.feature}
+              {...props}
+              onChange={handleChange(props.feature)}
+            />
+          ))}
+        <button>Export</button>
+      </form>
+    ) : (
+      <p>Exporting</p>
+    )
+  ) : null;
 }
