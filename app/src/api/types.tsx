@@ -53,3 +53,10 @@ export type AudioFeature = typeof ALL_AUDIO_FEATURES[number];
 export type AudioFeatureRanges = {
   [F in AudioFeature]?: { min: number; max: number };
 };
+
+export type PlaylistFilter = {
+  [F in AudioFeature]?: {
+    min: number;
+    max: number;
+  };
+};

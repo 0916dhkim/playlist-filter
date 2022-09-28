@@ -2,6 +2,7 @@ import {
   ALL_AUDIO_FEATURES,
   AudioFeature,
   AudioFeatureRanges,
+  PlaylistFilter,
 } from "../../api/types";
 import {
   ComponentPropsWithoutRef,
@@ -9,11 +10,12 @@ import {
   ReactElement,
   useState,
 } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 
 import AudioFeatureRangeInput from "./AudioFeatureRangeInput";
+import { exportPlaylist } from "../../api/mutations";
 import { getTracks } from "../../api/queries";
 import { isDefined } from "../../typeHelpers";
-import { useQuery } from "@tanstack/react-query";
 
 type InputProps = {
   [k in AudioFeature]?: ComponentPropsWithoutRef<typeof AudioFeatureRangeInput>;
@@ -25,8 +27,14 @@ type FilterFormState =
     }
   | {
       initialized: true;
-      stage: "editing" | "exporting";
+      stage: "editing";
       inputProps: InputProps;
+    }
+  | {
+      initialized: true;
+      stage: "exporting";
+      inputProps: InputProps;
+      playlistName: string;
     };
 
 type FilterFormProps = {
@@ -65,11 +73,12 @@ export default function FilterForm({
       );
     },
   });
+  const exportMutation = useMutation(exportPlaylist);
 
   const handleChange =
     (feature: AudioFeature) => (value: string, type: "min" | "max") => {
       setState((prev) => {
-        if (!prev.initialized) return prev;
+        if (!prev.initialized || prev.stage !== "editing") return prev;
         const updateKey = type === "min" ? "desiredMin" : "desiredMax";
         return {
           ...prev,
@@ -84,6 +93,16 @@ export default function FilterForm({
       });
     };
 
+  const handlePlaylistNameChange = (value: string) => {
+    setState((prev) => {
+      if (!prev.initialized || prev.stage !== "exporting") return prev;
+      return {
+        ...prev,
+        playlistName: value,
+      };
+    });
+  };
+
   const handleEditingSubmit: FormEventHandler = (e) => {
     e.preventDefault();
     setState((prev) => {
@@ -91,7 +110,28 @@ export default function FilterForm({
       return {
         ...prev,
         stage: "exporting",
+        playlistName: "",
       };
+    });
+  };
+
+  const handleExportSubmit: FormEventHandler = (e) => {
+    e.preventDefault();
+    if (!state.initialized || state.stage !== "exporting") return;
+    const filter: PlaylistFilter = {};
+    for (const feature of ALL_AUDIO_FEATURES) {
+      const featureInput = state.inputProps[feature];
+      if (featureInput) {
+        filter[feature] = {
+          min: Number(featureInput.desiredMin),
+          max: Number(featureInput.desiredMax),
+        };
+      }
+    }
+    exportMutation.mutate({
+      sourcePlaylistId: playlistId,
+      playlistName: state.playlistName,
+      filter,
     });
   };
 
@@ -107,10 +147,17 @@ export default function FilterForm({
               onChange={handleChange(props.feature)}
             />
           ))}
-        <button>Export</button>
+        <button>Next</button>
       </form>
     ) : (
-      <p>Exporting</p>
+      <form onSubmit={handleExportSubmit}>
+        <h1>New Playlist Name</h1>
+        <input
+          value={state.playlistName}
+          onChange={(e) => handlePlaylistNameChange(e.target.value)}
+        />
+        <button>Export</button>
+      </form>
     )
   ) : null;
 }
