@@ -1,6 +1,5 @@
 export type SpotifyUser = {
   id: string;
-  email: string;
   images: {
     url: string;
     width: number;

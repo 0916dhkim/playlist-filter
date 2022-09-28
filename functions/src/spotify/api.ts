@@ -79,7 +79,6 @@ export async function getMe(accessToken: string): Promise<SpotifyUser> {
   return z
     .object({
       id: z.string(),
-      email: z.string(),
       images: z.array(
         z.object({
           url: z.string(),
