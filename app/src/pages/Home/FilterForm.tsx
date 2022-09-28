@@ -13,9 +13,9 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 import AudioFeatureRangeInput from "./AudioFeatureRangeInput";
-import { exportPlaylist } from "../../api/mutations";
 import { getTracks } from "../../api/queries";
 import { isDefined } from "../../typeHelpers";
+import { useExportPlaylistMutation } from "../../api/mutations";
 
 type InputProps = {
   [k in AudioFeature]?: ComponentPropsWithoutRef<typeof AudioFeatureRangeInput>;
@@ -73,7 +73,7 @@ export default function FilterForm({
       );
     },
   });
-  const exportMutation = useMutation(exportPlaylist);
+  const exportMutation = useExportPlaylistMutation();
 
   const handleChange =
     (feature: AudioFeature) => (value: string, type: "min" | "max") => {

@@ -3,15 +3,20 @@ import { AudioFeatureRanges, Playlist, PlaylistDetails, Track } from "./types";
 import { getIdToken } from "../firebase";
 import z from "zod";
 
+type AnyAsyncFunction = (...args: any[]) => Promise<any>;
+type Query<TKey, TFunction extends AnyAsyncFunction> = [
+  [TKey, ...Parameters<TFunction>],
+  () => ReturnType<TFunction>
+];
+
 const Query =
-  <TKey, TFunction extends (...args: any[]) => Promise<any>>(
-    key: TKey,
-    fn: TFunction
-  ) =>
-  (
-    ...args: Parameters<TFunction>
-  ): [[TKey, ...Parameters<TFunction>], () => ReturnType<TFunction>] =>
+  <TKey, TFunction extends AnyAsyncFunction>(key: TKey, fn: TFunction) =>
+  (...args: Parameters<TFunction>): Query<TKey, TFunction> =>
     [[key, ...args], () => fn(...args) as ReturnType<TFunction>];
+
+export const queryKey = <TKey, TFunction extends AnyAsyncFunction>(
+  query: Query<TKey, TFunction>
+) => query[0];
 
 export const getPlaylists = Query(
   "playlists",
