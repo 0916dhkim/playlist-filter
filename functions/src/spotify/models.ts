@@ -1,3 +1,13 @@
+export type SpotifyUser = {
+  id: string;
+  email: string;
+  images: {
+    url: string;
+    width: number;
+    height: number;
+  }[];
+};
+
 export type SpotifyApiPlaylist = {
   id: string;
   name: string;
@@ -14,6 +24,7 @@ export type SpotifyApiPlaylistDetails = {
 
 export type SpotifyApiTrack = {
   id: string;
+  uri: string;
   name: string;
   duration_ms: number;
   preview_url?: string | null | undefined;

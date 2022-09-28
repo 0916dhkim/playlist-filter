@@ -1,12 +1,20 @@
-import { assembleTracks, calculateAudioFeatureRanges } from "./domainModels";
 import {
+  addBatchTracks,
+  createPlaylist,
   getBatchAudioFeatures,
+  getMe,
   getPlaylist,
   getPlaylists,
   getToken,
   getTracks,
   requestTokenRefresh,
 } from "./spotify/api";
+import {
+  assembleTracks,
+  calculateAudioFeatureRanges,
+  filterPlaylist,
+  playlistFilterSchema,
+} from "./domainModels";
 
 import cors from "cors";
 import env from "./env";
@@ -125,6 +133,34 @@ app.get("/playlists/:id/tracks", async (req, res, next) => {
     return res.json({
       tracks,
       audioFeatureRanges,
+    });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+app.post("/playlists/:id/export", async (req, res, next) => {
+  try {
+    const { playlistName, filter } = z
+      .object({
+        playlistName: z.string(),
+        filter: playlistFilterSchema,
+      })
+      .parse(req.body);
+    const accessToken = await getValidToken(req.user.uid);
+    const me = await getMe(accessToken);
+    const rawTracks = await getTracks(req.params.id, accessToken);
+    const audioFeatures = await getBatchAudioFeatures(
+      rawTracks.map((track) => track.id),
+      accessToken
+    );
+    const trackUrisToBeAdded = filterPlaylist(rawTracks, audioFeatures, filter);
+
+    const playlistId = await createPlaylist(accessToken, me.id, playlistName);
+    await addBatchTracks(accessToken, playlistId, trackUrisToBeAdded);
+
+    return res.json({
+      playlistId,
     });
   } catch (err) {
     return next(err);

@@ -1,4 +1,5 @@
 import { SpotifyApiAudioFeatures, SpotifyApiTrack } from "./spotify/models";
+import z, { ZodLiteral } from "zod";
 
 import { zipObjectArray } from "./utils";
 
@@ -18,6 +19,7 @@ export type PlaylistDetails = {
 
 export type Track = {
   id: string;
+  uri: string;
   name: string;
   durationMs: number;
   previewUrl?: string | null | undefined;
@@ -58,12 +60,31 @@ export type AudioFeatureRanges = {
   [F in AudioFeature]?: { min: number; max: number };
 };
 
+function literalArray<TLiterals extends (string | number)[]>(
+  ...literals: TLiterals
+) {
+  return literals.map((each) => z.literal(each)) as {
+    [K in keyof TLiterals]: ZodLiteral<TLiterals[K]>;
+  };
+}
+
+export const playlistFilterSchema = z.record(
+  z.union(literalArray(...ALL_AUDIO_FEATURES)),
+  z.object({
+    min: z.number(),
+    max: z.number(),
+  })
+);
+// TODO: Reduce repetition by using infer.
+export type PlaylistFilter = z.infer<typeof playlistFilterSchema>;
+
 export function assembleTracks(
   tracks: SpotifyApiTrack[],
   audioFeatures: SpotifyApiAudioFeatures[]
 ): Track[] {
   return zipObjectArray(tracks, audioFeatures, "id").map((combined) => ({
     id: combined.id,
+    uri: combined.uri,
     name: combined.name,
     durationMs: combined.duration_ms,
     previewUrl: combined.preview_url,
@@ -101,4 +122,31 @@ export function calculateAudioFeatureRanges(
     }
   }
   return ret;
+}
+
+function trackPredicate(track: Track, filter: PlaylistFilter): boolean {
+  for (const feature of ALL_AUDIO_FEATURES) {
+    const targetRange = filter[feature];
+    const featureValue = track[feature];
+    if (targetRange == null) {
+      continue;
+    }
+    if (featureValue == null) {
+      return false;
+    }
+    if (featureValue < targetRange.min || featureValue > targetRange.max) {
+      return false;
+    }
+  }
+  return true;
+}
+
+export function filterPlaylist(
+  tracks: SpotifyApiTrack[],
+  audioFeatures: SpotifyApiAudioFeatures[],
+  filter: PlaylistFilter
+): string[] {
+  return assembleTracks(tracks, audioFeatures)
+    .filter((track) => trackPredicate(track, filter))
+    .map((track) => track.uri);
 }
