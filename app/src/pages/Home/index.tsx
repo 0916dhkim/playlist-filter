@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 export default function Home(): ReactElement {
   const hasAuth = useFirebaseAuthState();
   const navigate = useNavigate();
+  // TODO: Convert to jotai
   const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(
     null
   );
@@ -62,10 +63,7 @@ export default function Home(): ReactElement {
           })}
         >
           <PlaylistDetails playlistId={selectedPlaylistId} />
-          <FilterForm
-            key={selectedPlaylistId}
-            playlistId={selectedPlaylistId}
-          />
+          <FilterForm playlistId={selectedPlaylistId} />
           <Tracks playlistId={selectedPlaylistId} />
         </div>
       ) : null}
