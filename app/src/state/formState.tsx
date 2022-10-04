@@ -15,7 +15,7 @@ type InputProps = {
   };
 };
 
-type FormState =
+export type FormState =
   | {
       stage: "uninitialized";
     }
@@ -44,51 +44,49 @@ function initialInputProps(audioFeatureRanges: AudioFeatureRanges) {
   return inputProps;
 }
 
-const baseAtom = atom<FormState>({ stage: "uninitialized" });
-export const formAtom = atom((get) => get(baseAtom));
-export const initializeFormAtom = atom(
-  null,
-  (get, set, audioFeatureRanges: AudioFeatureRanges) => {
-    const prev = get(baseAtom);
-    if (prev.stage === "uninitialized") {
-      set(baseAtom, {
-        stage: "editing",
-        inputProps: initialInputProps(audioFeatureRanges),
-      });
-    }
-  }
-);
-export const editPlaylistNameAtom = atom(null, (get, set, value: string) => {
-  const prev = get(baseAtom);
-  if (prev.stage === "exporting") {
-    set(prev.playlistName, value);
-  }
-});
-export const finishEditingAtom = atom(null, (get, set, _update) => {
-  const prev = get(baseAtom);
-  if (prev.stage === "editing") {
-    set(baseAtom, {
-      stage: "exporting",
-      inputProps: prev.inputProps,
-      playlistName: atom(""),
-    });
-  }
-});
-export const exportVariablesAtom = atom((get) => {
-  const formState = get(baseAtom);
-  if (formState.stage !== "exporting") return null;
-  const filter: PlaylistFilter = {};
-  for (const feature of ALL_AUDIO_FEATURES) {
-    const inputState = formState.inputProps[feature];
-    if (inputState) {
-      filter[feature] = {
-        min: Number(get(inputState.minAtom)),
-        max: Number(get(inputState.maxAtom)),
-      };
-    }
-  }
+export function makeFormAtoms() {
+  const baseAtom = atom<FormState>({ stage: "uninitialized" });
   return {
-    playlistName: get(formState.playlistName),
-    filter,
+    formAtom: atom((get) => get(baseAtom)),
+    initializeFormAtom: atom(
+      null,
+      (get, set, audioFeatureRanges: AudioFeatureRanges) => {
+        const prev = get(baseAtom);
+        if (prev.stage === "uninitialized") {
+          set(baseAtom, {
+            stage: "editing",
+            inputProps: initialInputProps(audioFeatureRanges),
+          });
+        }
+      }
+    ),
+    finishEditingAtom: atom(null, (get, set) => {
+      const prev = get(baseAtom);
+      if (prev.stage === "editing") {
+        set(baseAtom, {
+          stage: "exporting",
+          inputProps: prev.inputProps,
+          playlistName: atom(""),
+        });
+      }
+    }),
+    exportVariablesAtom: atom((get) => {
+      const formState = get(baseAtom);
+      if (formState.stage !== "exporting") return null;
+      const filter: PlaylistFilter = {};
+      for (const feature of ALL_AUDIO_FEATURES) {
+        const inputState = formState.inputProps[feature];
+        if (inputState) {
+          filter[feature] = {
+            min: Number(get(inputState.minAtom)),
+            max: Number(get(inputState.maxAtom)),
+          };
+        }
+      }
+      return {
+        playlistName: get(formState.playlistName),
+        filter,
+      };
+    }),
   };
-});
+}

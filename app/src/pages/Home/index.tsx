@@ -1,4 +1,6 @@
 import { ReactElement, useEffect, useState } from "react";
+import { appAtom, selectPlaylistAtom } from "../../state/app";
+import { useAtomValue, useSetAtom } from "jotai";
 
 import ConnectSpotifyButton from "../../components/ConnectSpotifyButton";
 import FilterForm from "./FilterForm";
@@ -13,14 +15,8 @@ import { useNavigate } from "react-router-dom";
 export default function Home(): ReactElement {
   const hasAuth = useFirebaseAuthState();
   const navigate = useNavigate();
-  // TODO: Convert to jotai
-  const [selectedPlaylistId, setSelectedPlaylistId] = useState<string | null>(
-    null
-  );
-
-  const handlePlaylistSelect = (playlistId: string) => {
-    setSelectedPlaylistId(playlistId);
-  };
+  const state = useAtomValue(appAtom);
+  const selectPlaylist = useSetAtom(selectPlaylistAtom);
 
   useEffect(() => {
     if (!hasAuth) {
@@ -51,9 +47,9 @@ export default function Home(): ReactElement {
         >
           Playlists
         </h4>
-        <Playlists onSelect={handlePlaylistSelect} />
+        <Playlists onSelect={selectPlaylist} />
       </div>
-      {selectedPlaylistId ? (
+      {state.selectedPlaylistId ? (
         <div
           className={sprinkles({
             display: "flex",
@@ -62,9 +58,15 @@ export default function Home(): ReactElement {
             gap: "xl",
           })}
         >
-          <PlaylistDetails playlistId={selectedPlaylistId} />
-          <FilterForm playlistId={selectedPlaylistId} />
-          <Tracks playlistId={selectedPlaylistId} />
+          <PlaylistDetails playlistId={state.selectedPlaylistId} />
+          <FilterForm
+            playlistId={state.selectedPlaylistId}
+            formAtom={state.formAtom}
+            initializeFormAtom={state.initializeFormAtom}
+            finishEditingAtom={state.finishEditingAtom}
+            exportVariablesAtom={state.exportVariablesAtom}
+          />
+          <Tracks playlistId={state.selectedPlaylistId} />
         </div>
       ) : null}
     </div>
