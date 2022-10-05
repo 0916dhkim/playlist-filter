@@ -1,25 +1,26 @@
 import {
-  addBatchTracks,
-  createPlaylist,
-  getBatchAudioFeatures,
-  getMe,
-  getPlaylist,
-  getPlaylists,
-  getToken,
-  getTracks,
-  requestTokenRefresh,
-} from "./spotify/api";
-import {
   assembleTracks,
   calculateAudioFeatureRanges,
   filterPlaylist,
   playlistFilterSchema,
 } from "./domainModels";
+import {
+  audioFeaturesRequest,
+  meRequest,
+  playlistCreateRequest,
+  playlistRequest,
+  playlistsRequest,
+  tokenRefreshRequest,
+  tokenRequest,
+  trackAddRequest,
+  tracksRequest,
+} from "./spotify/api";
 
 import cors from "cors";
 import env from "./env";
 import express from "express";
 import morgan from "morgan";
+import { runRequest } from "./request";
 import { spotifyAuthCollection } from "./firebase";
 import { validateFirebaseIdToken } from "./middleware";
 import z from "zod";
@@ -39,7 +40,7 @@ async function getValidToken(uid: string): Promise<string> {
     })
     .parse(doc.data());
   if (expiresAt <= now) {
-    const refreshed = await requestTokenRefresh(refreshToken);
+    const refreshed = await runRequest(tokenRefreshRequest, { refreshToken });
     await docRef.set(
       {
         accessToken: refreshed.accessToken,
@@ -80,7 +81,10 @@ app.post("/connect-spotify", async (req, res, next) => {
       return res.status(400).send("No code provided");
     }
 
-    const { accessToken, refreshToken, expiresIn } = await getToken(code);
+    const { accessToken, refreshToken, expiresIn } = await runRequest(
+      tokenRequest,
+      { code }
+    );
     const now = Math.floor(new Date().getTime() / 1000);
     spotifyAuthCollection.doc(req.user.uid).set(
       {
@@ -100,7 +104,10 @@ app.post("/connect-spotify", async (req, res, next) => {
 app.get("/playlists", async (req, res, next) => {
   try {
     const accessToken = await getValidToken(req.user.uid);
-    const playlists = await getPlaylists(accessToken);
+    const playlists = await runRequest(playlistsRequest, {
+      accessToken,
+      limit: 50, // TODO: do actual batching.
+    });
 
     return res.json({
       playlists,
@@ -113,7 +120,10 @@ app.get("/playlists", async (req, res, next) => {
 app.get("/playlists/:id", async (req, res, next) => {
   try {
     const accessToken = await getValidToken(req.user.uid);
-    const playlist = await getPlaylist(req.params.id, accessToken);
+    const playlist = await runRequest(playlistRequest, {
+      accessToken,
+      playlistId: req.params.id,
+    });
     return res.json({ playlist });
   } catch (err) {
     return next(err);
@@ -123,11 +133,15 @@ app.get("/playlists/:id", async (req, res, next) => {
 app.get("/playlists/:id/tracks", async (req, res, next) => {
   try {
     const accessToken = await getValidToken(req.user.uid);
-    const rawTracks = await getTracks(req.params.id, accessToken);
-    const audioFeatures = await getBatchAudioFeatures(
-      rawTracks.map((track) => track.id),
-      accessToken
-    );
+    const rawTracks = await runRequest(tracksRequest, {
+      accessToken,
+      playlistId: req.params.id,
+      limit: 50, // TODO: do actual batching.
+    });
+    const audioFeatures = await runRequest(audioFeaturesRequest, {
+      accessToken,
+      trackIds: rawTracks.map((track) => track.id),
+    });
     const tracks = assembleTracks(rawTracks, audioFeatures);
     const audioFeatureRanges = calculateAudioFeatureRanges(tracks);
     return res.json({
@@ -148,16 +162,28 @@ app.post("/playlists/:id/export", async (req, res, next) => {
       })
       .parse(req.body);
     const accessToken = await getValidToken(req.user.uid);
-    const me = await getMe(accessToken);
-    const rawTracks = await getTracks(req.params.id, accessToken);
-    const audioFeatures = await getBatchAudioFeatures(
-      rawTracks.map((track) => track.id),
-      accessToken
-    );
+    const me = await runRequest(meRequest, { accessToken });
+    const rawTracks = await runRequest(tracksRequest, {
+      accessToken,
+      playlistId: req.params.id,
+      limit: 50, // TODO: do actual batching.
+    });
+    const audioFeatures = await runRequest(audioFeaturesRequest, {
+      accessToken,
+      trackIds: rawTracks.map((track) => track.id),
+    });
     const trackUrisToBeAdded = filterPlaylist(rawTracks, audioFeatures, filter);
 
-    const playlistId = await createPlaylist(accessToken, me.id, playlistName);
-    await addBatchTracks(accessToken, playlistId, trackUrisToBeAdded);
+    const playlistId = await runRequest(playlistCreateRequest, {
+      accessToken,
+      playlistName,
+      userId: me.id,
+    });
+    await runRequest(trackAddRequest, {
+      accessToken,
+      playlistId,
+      trackUris: trackUrisToBeAdded,
+    });
 
     return res.json({
       playlistId,

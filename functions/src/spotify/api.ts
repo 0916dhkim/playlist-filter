@@ -1,169 +1,156 @@
-import {
-  SpotifyApiAudioFeatures,
-  SpotifyApiPlaylist,
-  SpotifyApiPlaylistDetails,
-  SpotifyApiTrack,
-  SpotifyUser,
-} from "./models";
+import { Request, buildRequest } from "../request";
 
-import axios from "axios";
 import env from "../env";
-import z from "zod";
+import { z } from "zod";
 
-export async function getToken(code: string) {
-  const form = new URLSearchParams();
-  form.append("grant_type", "authorization_code");
-  form.append("code", code);
-  form.append("redirect_uri", `${env.APP_BASE_URL}/callback`);
-  const response = await axios.post(
-    "https://accounts.spotify.com/api/token",
-    form,
-    {
-      headers: {
-        Authorization: `Basic ${Buffer.from(
-          `${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`
-        ).toString("base64")}`,
-      },
-    }
-  );
+export type SpotifyApiRequest<TVariables, TResponse> = {
+  type: Request<TVariables, TResponse>["type"];
+  path: (variables: TVariables) => string;
+  body?: Request<TVariables, TResponse>["body"];
+  urlParams?: Request<TVariables, TResponse>["urlParams"];
+  responseParser: Request<TVariables, TResponse>["responseParser"];
+};
+const buildSpotifyApiRequest = <TVariables, TResponse>(
+  request: SpotifyApiRequest<TVariables, TResponse>
+): Request<TVariables & { accessToken: string }, TResponse> => ({
+  type: request.type,
+  url: (variables: TVariables) =>
+    `https://api.spotify.com/v1${request.path(variables)}`,
+  headers: (variables: { accessToken: string }) => ({
+    Authorization: `Bearer ${variables.accessToken}`,
+  }),
+  body: request.body,
+  urlParams: request.urlParams,
+  responseParser: request.responseParser,
+});
 
-  const tokenResponse = z
-    .object({
+type TokenRequestInput = {
+  code: string;
+};
+export const tokenRequest = buildRequest({
+  type: "POST",
+  url: () => "https://accounts.spotify.com/api/token",
+  headers: () => ({
+    Authorization: `Basic ${Buffer.from(
+      `${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`
+    ).toString("base64")}`,
+  }),
+  body: ({ code }: TokenRequestInput) => {
+    const form = new URLSearchParams();
+    form.append("grant_type", "authorization_code");
+    form.append("code", code);
+    form.append("redirect_uri", `${env.APP_BASE_URL}/callback`);
+    return form;
+  },
+  responseParser: (response) => {
+    const schema = z.object({
       access_token: z.string(),
       refresh_token: z.string(),
       expires_in: z.number(),
-    })
-    .parse(response.data);
-  return {
-    accessToken: tokenResponse.access_token,
-    refreshToken: tokenResponse.refresh_token,
-    expiresIn: tokenResponse.expires_in,
-  };
-}
+    });
+    const parsed = schema.parse(response);
+    return {
+      accessToken: parsed.access_token,
+      refreshToken: parsed.refresh_token,
+      expiresIn: parsed.expires_in,
+    };
+  },
+});
 
-export async function requestTokenRefresh(refreshToken: string) {
-  const form = new URLSearchParams();
-  form.append("grant_type", "refresh_token");
-  form.append("refresh_token", refreshToken);
-  const response = await axios.post(
-    "https://accounts.spotify.com/api/token",
-    form,
-    {
-      headers: {
-        Authorization: `Basic ${Buffer.from(
-          `${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`
-        ).toString("base64")}`,
-      },
-    }
-  );
-
-  const tokenResponse = z
-    .object({
+type TokenRefreshRequestInput = {
+  refreshToken: string;
+};
+export const tokenRefreshRequest = buildRequest({
+  type: "POST",
+  url: () => "https://accounts.spotify.com/api/token",
+  headers: () => ({
+    Authorization: `Basic ${Buffer.from(
+      `${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`
+    ).toString("base64")}`,
+  }),
+  body: ({ refreshToken }: TokenRefreshRequestInput) => {
+    const form = new URLSearchParams();
+    form.append("grant_type", "refresh_token");
+    form.append("refresh_token", refreshToken);
+    return form;
+  },
+  responseParser: (response) => {
+    const schema = z.object({
       access_token: z.string(),
       expires_in: z.number(),
-    })
-    .parse(response.data);
-  return {
-    accessToken: tokenResponse.access_token,
-    expiresIn: tokenResponse.expires_in,
-  };
-}
+    });
+    const parsed = schema.parse(response);
+    return {
+      accessToken: parsed.access_token,
+      expiresIn: parsed.expires_in,
+    };
+  },
+});
 
-export async function getMe(accessToken: string): Promise<SpotifyUser> {
-  const response = await axios.get("https://api.spotify.com/v1/me", {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+export const meRequest = buildSpotifyApiRequest({
+  type: "GET",
+  path: () => "/me",
+  responseParser: z.object({
+    id: z.string(),
+    images: z.array(
+      z.object({
+        url: z.string(),
+        width: z.number(),
+        height: z.number(),
+      })
+    ),
+  }).parse,
+});
 
-  return z
-    .object({
-      id: z.string(),
-      images: z.array(
-        z.object({
-          url: z.string(),
-          width: z.number(),
-          height: z.number(),
-        })
-      ),
-    })
-    .parse(response.data);
-}
-
-export async function getPlaylists(
-  accessToken: string
-): Promise<SpotifyApiPlaylist[]> {
-  const response = await axios.get("https://api.spotify.com/v1/me/playlists", {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-    params: {
-      limit: 50,
-    },
-  });
-
-  const { items } = z
-    .object({
+type PlaylistsRequestInput = {
+  limit: number;
+};
+export const playlistsRequest = buildSpotifyApiRequest({
+  type: "GET",
+  path: () => "/me/playlists",
+  urlParams: ({ limit }: PlaylistsRequestInput) => ({ limit }),
+  responseParser: (response) => {
+    const schema = z.object({
       items: z.array(
         z.object({
           id: z.string(),
           name: z.string(),
         })
       ),
-    })
-    .parse(response.data);
-  return items;
-}
+    });
+    return schema.parse(response).items;
+  },
+});
 
-export async function getPlaylist(
-  playlistId: string,
-  accessToken: string
-): Promise<SpotifyApiPlaylistDetails> {
-  const response = await axios.get(
-    `https://api.spotify.com/v1/playlists/${playlistId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      params: {
-        limit: 50,
-      },
-    }
-  );
+type PlaylistRequestInput = {
+  playlistId: string;
+};
+export const playlistRequest = buildSpotifyApiRequest({
+  type: "GET",
+  path: ({ playlistId }: PlaylistRequestInput) => `/playlists/${playlistId}`,
+  responseParser: z.object({
+    id: z.string(),
+    name: z.string(),
+    description: z.nullable(z.string()),
+    images: z.array(
+      z.object({
+        url: z.string(),
+      })
+    ),
+  }).parse,
+});
 
-  return z
-    .object({
-      id: z.string(),
-      name: z.string(),
-      description: z.nullable(z.string()),
-      images: z.array(
-        z.object({
-          url: z.string(),
-        })
-      ),
-    })
-    .parse(response.data);
-}
-
-export async function getTracks(
-  playlistId: string,
-  accessToken: string
-): Promise<SpotifyApiTrack[]> {
-  // TODO: do actual batching.
-  const response = await axios.get(
-    `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      params: {
-        limit: 50,
-      },
-    }
-  );
-
-  const { items } = z
-    .object({
+type TracksRequestInput = {
+  playlistId: string;
+  limit: number;
+};
+export const tracksRequest = buildSpotifyApiRequest({
+  type: "GET",
+  path: ({ playlistId }: TracksRequestInput) =>
+    `/playlists/${playlistId}/tracks`,
+  urlParams: ({ limit }: TracksRequestInput) => ({ limit }),
+  responseParser: (response) => {
+    const schema = z.object({
       items: z.array(
         z.object({
           track: z.object({
@@ -186,32 +173,22 @@ export async function getTracks(
           }),
         })
       ),
-    })
-    .parse(response.data);
+    });
+    return schema.parse(response).items.map((item) => item.track);
+  },
+});
 
-  const tracks = items.map((item) => item.track);
-  return tracks;
-}
-
-export async function getBatchAudioFeatures(
-  trackIds: string[],
-  accessToken: string
-): Promise<SpotifyApiAudioFeatures[]> {
-  // TODO: do actual batching.
-  const response = await axios.get(
-    "https://api.spotify.com/v1/audio-features",
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      params: {
-        ids: trackIds.join(","),
-      },
-    }
-  );
-
-  const { audio_features } = z
-    .object({
+type AudioFeaturesRequestInput = {
+  trackIds: string[];
+};
+export const audioFeaturesRequest = buildSpotifyApiRequest({
+  type: "GET",
+  path: () => "/audio-features",
+  urlParams: ({ trackIds }: AudioFeaturesRequestInput) => ({
+    ids: trackIds.join(","),
+  }),
+  responseParser: (response) => {
+    const schema = z.object({
       audio_features: z.array(
         z.object({
           id: z.string(),
@@ -229,55 +206,40 @@ export async function getBatchAudioFeatures(
           valence: z.optional(z.number()),
         })
       ),
-    })
-    .parse(response.data);
+    });
+    return schema.parse(response).audio_features;
+  },
+});
 
-  return audio_features;
-}
-
-export async function createPlaylist(
-  accessToken: string,
-  userId: string,
-  playlistName: string
-): Promise<string> {
-  const response = await axios.post(
-    `https://api.spotify.com/v1/users/${userId}/playlists`,
-    {
-      name: playlistName,
-      public: false,
-      description: "Auto-generated by Spotify Filter.",
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
-
-  const responseData = z
-    .object({
+type PlaylistCreateRequestInput = {
+  userId: string;
+  playlistName: string;
+};
+export const playlistCreateRequest = buildSpotifyApiRequest({
+  type: "POST",
+  path: ({ userId }: PlaylistCreateRequestInput) =>
+    `/users/${userId}/playlists`,
+  body: ({ playlistName }: PlaylistCreateRequestInput) => ({
+    name: playlistName,
+    public: false,
+    description: "Auto-generated by Spotify Filter",
+  }),
+  responseParser: (response) => {
+    const schema = z.object({
       id: z.string(),
-    })
-    .parse(response.data);
+    });
+    return schema.parse(response).id;
+  },
+});
 
-  return responseData.id;
-}
-
-export async function addBatchTracks(
-  accessToken: string,
-  playlistId: string,
-  trackUris: string[]
-): Promise<void> {
-  // TODO: do actual batching.
-  await axios.post(
-    `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
-    { uris: trackUris },
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
-
-  return;
-}
+type TrackAddRequestInput = {
+  playlistId: string;
+  trackUris: string[];
+};
+export const trackAddRequest = buildSpotifyApiRequest({
+  type: "POST",
+  path: ({ playlistId }: TrackAddRequestInput) =>
+    `/playlists/${playlistId}/tracks`,
+  body: ({ trackUris }: TrackAddRequestInput) => ({ uris: trackUris }),
+  responseParser: z.unknown().parse,
+});

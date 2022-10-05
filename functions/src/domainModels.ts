@@ -1,6 +1,7 @@
-import { SpotifyApiAudioFeatures, SpotifyApiTrack } from "./spotify/models";
+import { audioFeaturesRequest, tracksRequest } from "./spotify/api";
 import z, { ZodLiteral } from "zod";
 
+import { ResponseOf } from "./request";
 import { zipObjectArray } from "./utils";
 
 export type Playlist = {
@@ -79,8 +80,8 @@ export const playlistFilterSchema = z.record(
 export type PlaylistFilter = z.infer<typeof playlistFilterSchema>;
 
 export function assembleTracks(
-  tracks: SpotifyApiTrack[],
-  audioFeatures: SpotifyApiAudioFeatures[]
+  tracks: ResponseOf<typeof tracksRequest>,
+  audioFeatures: ResponseOf<typeof audioFeaturesRequest>
 ): Track[] {
   return zipObjectArray(tracks, audioFeatures, "id").map((combined) => ({
     id: combined.id,
@@ -142,8 +143,8 @@ function trackPredicate(track: Track, filter: PlaylistFilter): boolean {
 }
 
 export function filterPlaylist(
-  tracks: SpotifyApiTrack[],
-  audioFeatures: SpotifyApiAudioFeatures[],
+  tracks: ResponseOf<typeof tracksRequest>,
+  audioFeatures: ResponseOf<typeof audioFeaturesRequest>,
   filter: PlaylistFilter
 ): string[] {
   return assembleTracks(tracks, audioFeatures)
