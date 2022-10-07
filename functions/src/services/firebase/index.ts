@@ -53,7 +53,7 @@ async function updateDoc<TCollectionSpec extends CollectionSpec<any>>(
 export async function getValidToken(uid: string): Promise<string> {
   const now = Math.floor(new Date().getTime() / 1000);
   const spotifyAuth = await getDoc(spotifyAuthCollection, uid);
-  invariant(spotifyAuth);
+  invariant(spotifyAuth); // TODO: Handle this case.
   const { accessToken, refreshToken, expiresAt } = spotifyAuth;
   if (expiresAt <= now) {
     const refreshed = await getRefreshedToken(refreshToken);
