@@ -1,9 +1,4 @@
-import { Observable, map } from "rxjs";
-import { audioFeaturesRequest, tracksRequest } from "./services/spotify/api";
 import z, { ZodLiteral } from "zod";
-
-import { ResponseOf } from "./request";
-import { pairByKey } from "./utils";
 
 export type Playlist = {
   id: string;
@@ -79,31 +74,6 @@ export const playlistFilterSchema = z.record(
 );
 // TODO: Reduce repetition by using infer.
 export type PlaylistFilter = z.infer<typeof playlistFilterSchema>;
-
-export function assembleTracks(
-  tracks$: Observable<ResponseOf<typeof tracksRequest>[number]>,
-  audioFeatures$: Observable<ResponseOf<typeof audioFeaturesRequest>[number]>
-): Observable<Track> {
-  return pairByKey(tracks$, audioFeatures$, "id").pipe(
-    map(([track, audioFeature]) => ({
-      id: track.id,
-      uri: track.uri,
-      name: track.name,
-      durationMs: track.duration_ms,
-      previewUrl: track.preview_url,
-      album: track.album,
-      accousticness: audioFeature.accousticness,
-      danceability: audioFeature.danceability,
-      energy: audioFeature.energy,
-      instrumentalness: audioFeature.instrumentalness,
-      liveness: audioFeature.liveness,
-      loudness: audioFeature.loudness,
-      speechiness: audioFeature.speechiness,
-      tempo: audioFeature.tempo,
-      valence: audioFeature.valence,
-    }))
-  );
-}
 
 export function calculateAudioFeatureRanges(
   tracks: Track[]

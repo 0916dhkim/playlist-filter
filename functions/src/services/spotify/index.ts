@@ -3,7 +3,6 @@ import {
   Playlist,
   PlaylistFilter,
   Track,
-  assembleTracks,
 } from "../../models";
 import {
   Observable,
@@ -16,6 +15,7 @@ import {
   map,
   toArray,
 } from "rxjs";
+import { ResponseOf, runRequest } from "../../request";
 import {
   audioFeaturesRequest,
   meRequest,
@@ -28,7 +28,7 @@ import {
   tracksRequest,
 } from "./api";
 
-import { runRequest } from "../../request";
+import { pairByKey } from "../../utils";
 
 export async function getTokenWithAuthorizationCode(code: string): Promise<{
   accessToken: string;
@@ -62,6 +62,31 @@ export async function getPlaylist(
     playlistId,
   });
   return playlist;
+}
+
+function assembleTracks(
+  tracks$: Observable<ResponseOf<typeof tracksRequest>[number]>,
+  audioFeatures$: Observable<ResponseOf<typeof audioFeaturesRequest>[number]>
+): Observable<Track> {
+  return pairByKey(tracks$, audioFeatures$, "id").pipe(
+    map(([track, audioFeature]) => ({
+      id: track.id,
+      uri: track.uri,
+      name: track.name,
+      durationMs: track.duration_ms,
+      previewUrl: track.preview_url,
+      album: track.album,
+      accousticness: audioFeature.accousticness,
+      danceability: audioFeature.danceability,
+      energy: audioFeature.energy,
+      instrumentalness: audioFeature.instrumentalness,
+      liveness: audioFeature.liveness,
+      loudness: audioFeature.loudness,
+      speechiness: audioFeature.speechiness,
+      tempo: audioFeature.tempo,
+      valence: audioFeature.valence,
+    }))
+  );
 }
 
 export function getTracks(
