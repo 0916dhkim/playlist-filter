@@ -2,11 +2,11 @@ import {
   calculateAudioFeatureRanges,
   playlistFilterSchema,
 } from "./domainModels";
+import { connectSpotify, getValidToken } from "./services/firebase";
 import {
   exportPlaylist,
   getPlaylist,
   getPlaylists,
-  getTokenWithAuthorizationCode,
   getTracks,
 } from "./services/spotify";
 import { from, lastValueFrom, toArray } from "rxjs";
@@ -15,39 +15,8 @@ import cors from "cors";
 import env from "./env";
 import express from "express";
 import morgan from "morgan";
-import { runRequest } from "./request";
-import { spotifyAuthCollection } from "./firebase";
-import { tokenRefreshRequest } from "./services/spotify/api";
 import { validateFirebaseIdToken } from "./middleware";
 import z from "zod";
-
-/**
- * Get an access token that is not expired.
- */
-async function getValidToken(uid: string): Promise<string> {
-  const docRef = spotifyAuthCollection.doc(uid);
-  const doc = await docRef.get();
-  const now = Math.floor(new Date().getTime() / 1000);
-  const { accessToken, refreshToken, expiresAt } = z
-    .object({
-      accessToken: z.string(),
-      refreshToken: z.string(),
-      expiresAt: z.number(),
-    })
-    .parse(doc.data());
-  if (expiresAt <= now) {
-    const refreshed = await runRequest(tokenRefreshRequest, { refreshToken });
-    await docRef.set(
-      {
-        accessToken: refreshed.accessToken,
-        expiresAt: now + refreshed.expiresIn,
-      },
-      { merge: true }
-    );
-    return refreshed.accessToken;
-  }
-  return accessToken;
-}
 
 const app = express();
 
@@ -77,17 +46,7 @@ app.post("/connect-spotify", async (req, res, next) => {
       return res.status(400).send("No code provided");
     }
 
-    const { accessToken, refreshToken, expiresIn } =
-      await getTokenWithAuthorizationCode(code);
-    const now = Math.floor(new Date().getTime() / 1000);
-    spotifyAuthCollection.doc(req.user.uid).set(
-      {
-        accessToken,
-        refreshToken,
-        expiresAt: now + expiresIn,
-      },
-      { merge: true }
-    );
+    await connectSpotify(req.uid, code);
 
     return res.sendStatus(200);
   } catch (err) {
@@ -97,7 +56,7 @@ app.post("/connect-spotify", async (req, res, next) => {
 
 app.get("/playlists", async (req, res, next) => {
   try {
-    const accessToken = await getValidToken(req.user.uid);
+    const accessToken = await getValidToken(req.uid);
     const playlists = await lastValueFrom(
       from(getPlaylists(accessToken)).pipe(toArray())
     );
@@ -112,7 +71,7 @@ app.get("/playlists", async (req, res, next) => {
 
 app.get("/playlists/:id", async (req, res, next) => {
   try {
-    const accessToken = await getValidToken(req.user.uid);
+    const accessToken = await getValidToken(req.uid);
     const playlist = await getPlaylist(accessToken, req.params.id);
     return res.json({ playlist });
   } catch (err) {
@@ -122,7 +81,7 @@ app.get("/playlists/:id", async (req, res, next) => {
 
 app.get("/playlists/:id/tracks", async (req, res, next) => {
   try {
-    const accessToken = await getValidToken(req.user.uid);
+    const accessToken = await getValidToken(req.uid);
     const tracks = await lastValueFrom(
       getTracks(accessToken, req.params.id).pipe(toArray())
     );
@@ -144,7 +103,7 @@ app.post("/playlists/:id/export", async (req, res, next) => {
         filter: playlistFilterSchema,
       })
       .parse(req.body);
-    const accessToken = await getValidToken(req.user.uid);
+    const accessToken = await getValidToken(req.uid);
     const playlistId = await exportPlaylist(
       accessToken,
       req.params.id,

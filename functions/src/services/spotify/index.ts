@@ -22,6 +22,7 @@ import {
   playlistCreateRequest,
   playlistRequest,
   playlistsRequest,
+  tokenRefreshRequest,
   tokenRequest,
   trackAddRequest,
   tracksRequest,
@@ -36,6 +37,9 @@ export async function getTokenWithAuthorizationCode(code: string): Promise<{
 }> {
   return runRequest(tokenRequest, { code });
 }
+
+export const getRefreshedToken = (refreshToken: string) =>
+  runRequest(tokenRefreshRequest, { refreshToken });
 
 export async function* getPlaylists(
   accessToken: string

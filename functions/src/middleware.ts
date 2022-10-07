@@ -1,5 +1,5 @@
 import { Handler } from "express";
-import { admin } from "./firebase";
+import { getUidByIdToken } from "./services/firebase";
 
 export const validateFirebaseIdToken: Handler = async (req, res, next) => {
   // Read the ID Token from the Authorization header.
@@ -10,8 +10,7 @@ export const validateFirebaseIdToken: Handler = async (req, res, next) => {
   }
 
   try {
-    const decodedIdToken = await admin.auth().verifyIdToken(idToken);
-    req.user = decodedIdToken;
+    req.uid = await getUidByIdToken(idToken);
     next();
     return;
   } catch (error) {
