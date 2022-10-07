@@ -1,72 +1,82 @@
-/**
- * Convert an array to an object using a property as a key.
- * @returns A new object mapping keys to objects
- * @example
- * const array = [{name: "John", state: "TX"}, {name: "Jane", state: "CA"}]
- * const mapped = mapObjects(array, "name")
- * mapped === {
- *   John: {name: "John", state: "TX"},
- *   Jane: {name: "Jane", state: "CA"},
- * }
- */
-export function mapObjects<
-  KeyName extends string | number | symbol,
-  KeyType extends string | number | symbol,
-  Element extends {
-    [K in KeyName]: KeyType;
-  }
->(
-  array: Element[],
-  keyName: KeyName
-): {
-  [K in KeyType]?: Element;
-} {
-  const indexed: {
-    [K in KeyType]?: Element;
-  } = {};
-  for (const element of array) {
-    indexed[element[keyName]] = element;
-  }
-  return indexed;
-}
+import { Observable } from "rxjs";
 
-/**
- * Merge objects from two arrays
- * @returns A new array with merged objects.
- * @example
- * const first = [{id: 1, name: "John"}, {id: 2, name: "Jane"}]
- * const second = [{id: 2, state: "CA"}, {id: 1, state: "TX"}]
- * const merged = zipObjectArray(first, second, "id")
- * merged === [
- *   {id: 1, name: "John", state: "TX"},
- *   {id: 2, name: "Jane", state: "CA"},
- * ]
- */
-export function zipObjectArray<
+export function pairByKey<
   KeyName extends string | number | symbol,
   KeyType extends string | number | symbol,
-  FirstArrayElement extends {
+  FirstElement extends {
     [K in KeyName]: KeyType;
   },
-  SecondArrayElement extends {
+  SecondElement extends {
     [K in KeyName]: KeyType;
   }
 >(
-  firstArray: FirstArrayElement[],
-  secondArray: SecondArrayElement[],
+  firstObservable: Observable<FirstElement>,
+  secondObservable: Observable<SecondElement>,
   keyName: KeyName
-): (FirstArrayElement & SecondArrayElement)[] {
-  const indexedSecondArray = mapObjects(secondArray, keyName);
-  const ret = firstArray.map((firstElement) => {
-    const key: string | number | symbol = firstElement[keyName];
-    const secondElement = indexedSecondArray[key];
-    if (secondElement === undefined) {
-      throw new Error(`secondArray does not have ${String(key)}`);
-    }
-    return {
-      ...firstElement,
-      ...secondElement,
+): Observable<[FirstElement, SecondElement]> {
+  return new Observable<[FirstElement, SecondElement]>((subscriber) => {
+    const firstMap: Map<string | number | symbol, FirstElement> = new Map();
+    const secondMap: Map<string | number | symbol, SecondElement> = new Map();
+
+    let firstComplete = false;
+    let secondComplete = false;
+
+    const firstSubscription = firstObservable.subscribe({
+      next(first) {
+        const key: string | number | symbol = first[keyName];
+        const second = secondMap.get(key);
+        if (second) {
+          secondMap.delete(key);
+          subscriber.next([first, second]);
+        } else {
+          firstMap.set(key, first);
+        }
+      },
+      error(err) {
+        subscriber.error(err);
+      },
+      complete() {
+        if (secondComplete) {
+          if (firstMap.size > 0 || secondMap.size > 0) {
+            subscriber.error("There are unmatched elements.");
+          } else {
+            subscriber.complete();
+          }
+        } else {
+          firstComplete = true;
+        }
+      },
+    });
+    const secondSubscription = secondObservable.subscribe({
+      next(second) {
+        const key: string | number | symbol = second[keyName];
+        const first = firstMap.get(key);
+        if (first) {
+          firstMap.delete(key);
+          subscriber.next([first, second]);
+        } else {
+          secondMap.set(key, second);
+        }
+      },
+      error(err) {
+        subscriber.error(err);
+      },
+      complete() {
+        if (firstComplete) {
+          if (firstMap.size > 0 || secondMap.size > 0) {
+            subscriber.error("There are unmatched elements.");
+          } else {
+            subscriber.complete();
+          }
+        } else {
+          secondComplete = true;
+        }
+      },
+    });
+
+    return () => {
+      firstSubscription.unsubscribe();
+      secondSubscription.unsubscribe();
     };
   });
-  return ret;
 }

@@ -1,20 +1,15 @@
 import {
-  assembleTracks,
   calculateAudioFeatureRanges,
-  filterPlaylist,
   playlistFilterSchema,
 } from "./domainModels";
 import {
-  audioFeaturesRequest,
-  meRequest,
-  playlistCreateRequest,
-  playlistRequest,
-  playlistsRequest,
-  tokenRefreshRequest,
-  tokenRequest,
-  trackAddRequest,
-  tracksRequest,
-} from "./spotify/api";
+  exportPlaylist,
+  getPlaylist,
+  getPlaylists,
+  getTokenWithAuthorizationCode,
+  getTracks,
+} from "./spotify/service";
+import { from, lastValueFrom, toArray } from "rxjs";
 
 import cors from "cors";
 import env from "./env";
@@ -22,6 +17,7 @@ import express from "express";
 import morgan from "morgan";
 import { runRequest } from "./request";
 import { spotifyAuthCollection } from "./firebase";
+import { tokenRefreshRequest } from "./spotify/api";
 import { validateFirebaseIdToken } from "./middleware";
 import z from "zod";
 
@@ -81,10 +77,8 @@ app.post("/connect-spotify", async (req, res, next) => {
       return res.status(400).send("No code provided");
     }
 
-    const { accessToken, refreshToken, expiresIn } = await runRequest(
-      tokenRequest,
-      { code }
-    );
+    const { accessToken, refreshToken, expiresIn } =
+      await getTokenWithAuthorizationCode(code);
     const now = Math.floor(new Date().getTime() / 1000);
     spotifyAuthCollection.doc(req.user.uid).set(
       {
@@ -104,10 +98,9 @@ app.post("/connect-spotify", async (req, res, next) => {
 app.get("/playlists", async (req, res, next) => {
   try {
     const accessToken = await getValidToken(req.user.uid);
-    const playlists = await runRequest(playlistsRequest, {
-      accessToken,
-      limit: 50, // TODO: do actual batching.
-    });
+    const playlists = await lastValueFrom(
+      from(getPlaylists(accessToken)).pipe(toArray())
+    );
 
     return res.json({
       playlists,
@@ -120,10 +113,7 @@ app.get("/playlists", async (req, res, next) => {
 app.get("/playlists/:id", async (req, res, next) => {
   try {
     const accessToken = await getValidToken(req.user.uid);
-    const playlist = await runRequest(playlistRequest, {
-      accessToken,
-      playlistId: req.params.id,
-    });
+    const playlist = await getPlaylist(accessToken, req.params.id);
     return res.json({ playlist });
   } catch (err) {
     return next(err);
@@ -133,16 +123,9 @@ app.get("/playlists/:id", async (req, res, next) => {
 app.get("/playlists/:id/tracks", async (req, res, next) => {
   try {
     const accessToken = await getValidToken(req.user.uid);
-    const rawTracks = await runRequest(tracksRequest, {
-      accessToken,
-      playlistId: req.params.id,
-      limit: 50, // TODO: do actual batching.
-    });
-    const audioFeatures = await runRequest(audioFeaturesRequest, {
-      accessToken,
-      trackIds: rawTracks.map((track) => track.id),
-    });
-    const tracks = assembleTracks(rawTracks, audioFeatures);
+    const tracks = await lastValueFrom(
+      getTracks(accessToken, req.params.id).pipe(toArray())
+    );
     const audioFeatureRanges = calculateAudioFeatureRanges(tracks);
     return res.json({
       tracks,
@@ -162,29 +145,12 @@ app.post("/playlists/:id/export", async (req, res, next) => {
       })
       .parse(req.body);
     const accessToken = await getValidToken(req.user.uid);
-    const me = await runRequest(meRequest, { accessToken });
-    const rawTracks = await runRequest(tracksRequest, {
+    const playlistId = await exportPlaylist(
       accessToken,
-      playlistId: req.params.id,
-      limit: 50, // TODO: do actual batching.
-    });
-    const audioFeatures = await runRequest(audioFeaturesRequest, {
-      accessToken,
-      trackIds: rawTracks.map((track) => track.id),
-    });
-    const trackUrisToBeAdded = filterPlaylist(rawTracks, audioFeatures, filter);
-
-    const playlistId = await runRequest(playlistCreateRequest, {
-      accessToken,
+      req.params.id,
       playlistName,
-      userId: me.id,
-    });
-    await runRequest(trackAddRequest, {
-      accessToken,
-      playlistId,
-      trackUris: trackUrisToBeAdded,
-    });
-
+      filter
+    );
     return res.json({
       playlistId,
     });
