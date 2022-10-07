@@ -8,7 +8,7 @@ import {
   getPlaylists,
   getTokenWithAuthorizationCode,
   getTracks,
-} from "./spotify/service";
+} from "./services/spotify";
 import { from, lastValueFrom, toArray } from "rxjs";
 
 import cors from "cors";
@@ -17,7 +17,7 @@ import express from "express";
 import morgan from "morgan";
 import { runRequest } from "./request";
 import { spotifyAuthCollection } from "./firebase";
-import { tokenRefreshRequest } from "./spotify/api";
+import { tokenRefreshRequest } from "./services/spotify/api";
 import { validateFirebaseIdToken } from "./middleware";
 import z from "zod";
 

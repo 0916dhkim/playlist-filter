@@ -4,7 +4,7 @@ import {
   PlaylistFilter,
   Track,
   assembleTracks,
-} from "../domainModels";
+} from "../../domainModels";
 import {
   Observable,
   bufferCount,
@@ -27,7 +27,7 @@ import {
   tracksRequest,
 } from "./api";
 
-import { runRequest } from "../request";
+import { runRequest } from "../../request";
 
 export async function getTokenWithAuthorizationCode(code: string): Promise<{
   accessToken: string;

@@ -1,5 +1,5 @@
 import { Observable, map } from "rxjs";
-import { audioFeaturesRequest, tracksRequest } from "./spotify/api";
+import { audioFeaturesRequest, tracksRequest } from "./services/spotify/api";
 import z, { ZodLiteral } from "zod";
 
 import { ResponseOf } from "./request";

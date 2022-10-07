@@ -1,6 +1,6 @@
-import { Request, buildRequest } from "../request";
+import { Request, buildRequest } from "../../request";
 
-import env from "../env";
+import env from "../../env";
 import { z } from "zod";
 
 export type SpotifyApiRequest<TVariables, TResponse> = {
