@@ -29,13 +29,22 @@ async function getDoc<TCollectionSpec extends CollectionSpec<any>>(
   return collectionSpec.schema.parse(docData);
 }
 
+async function createDoc<TCollectionSpec extends CollectionSpec<any>>(
+  collectionSpec: TCollectionSpec,
+  id: string,
+  data: DocOf<TCollectionSpec>
+): Promise<void> {
+  const docRef = db.collection(collectionSpec.name).doc(id);
+  await docRef.set(data);
+}
+
 async function updateDoc<TCollectionSpec extends CollectionSpec<any>>(
   collectionSpec: TCollectionSpec,
   id: string,
   data: Partial<DocOf<TCollectionSpec>>
 ): Promise<void> {
   const docRef = db.collection(collectionSpec.name).doc(id);
-  await docRef.set(data, { merge: true }); // TODO: Should fail if there is no existing doc.
+  await docRef.update(data);
 }
 
 /**
@@ -62,7 +71,7 @@ export async function connectSpotify(uid: string, code: string): Promise<void> {
     await getTokenWithAuthorizationCode(code);
   const now = Math.floor(new Date().getTime() / 1000);
 
-  await updateDoc(spotifyAuthCollection, uid, {
+  await createDoc(spotifyAuthCollection, uid, {
     accessToken,
     refreshToken,
     expiresAt: now + expiresIn,
