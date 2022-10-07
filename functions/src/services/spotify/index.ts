@@ -4,7 +4,7 @@ import {
   PlaylistFilter,
   Track,
   assembleTracks,
-} from "../../domainModels";
+} from "../../models";
 import {
   Observable,
   bufferCount,

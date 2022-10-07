@@ -1,7 +1,4 @@
-import {
-  calculateAudioFeatureRanges,
-  playlistFilterSchema,
-} from "./domainModels";
+import { calculateAudioFeatureRanges, playlistFilterSchema } from "./models";
 import { connectSpotify, getValidToken } from "./services/firebase";
 import {
   exportPlaylist,
