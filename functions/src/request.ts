@@ -39,10 +39,12 @@ export async function runRequest<TVariables, TResponse>(
       );
     case "POST":
       return request.responseParser(
-        await axios.post(url, body, {
-          headers,
-          params,
-        })
+        (
+          await axios.post(url, body, {
+            headers,
+            params,
+          })
+        ).data
       );
   }
 }
