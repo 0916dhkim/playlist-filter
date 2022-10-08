@@ -11,9 +11,7 @@ import {
   filter,
   from,
   identity,
-  lastValueFrom,
   map,
-  toArray,
 } from "rxjs";
 import { ResponseOf, runRequest } from "../../request";
 import {
@@ -27,8 +25,7 @@ import {
   trackAddRequest,
   tracksRequest,
 } from "./api";
-
-import { pairByKey } from "../../utils";
+import { pairByKey, toPromise } from "../../utils";
 
 export async function getTokenWithAuthorizationCode(code: string): Promise<{
   accessToken: string;
@@ -41,16 +38,13 @@ export async function getTokenWithAuthorizationCode(code: string): Promise<{
 export const getRefreshedToken = (refreshToken: string) =>
   runRequest(tokenRefreshRequest, { refreshToken });
 
-export async function* getPlaylists(
-  accessToken: string
-): AsyncGenerator<Playlist, void, unknown> {
-  const playlists = await runRequest(playlistsRequest, {
-    accessToken,
-    limit: 50, // TODO: do actual batching.
-  });
-  for (const playlist of playlists) {
-    yield playlist;
-  }
+export function getPlaylists(accessToken: string): Observable<Playlist> {
+  return from(
+    runRequest(playlistsRequest, {
+      accessToken,
+      limit: 50, // TODO: do actual batching.
+    })
+  ).pipe(concatMap(identity));
 }
 
 export async function getPlaylist(
@@ -139,11 +133,10 @@ export async function exportPlaylist(
 ): Promise<string> {
   const me = await runRequest(meRequest, { accessToken });
 
-  const trackUris = await lastValueFrom(
+  const trackUris = await toPromise(
     getTracks(accessToken, originalPlaylistId).pipe(
       filter((track) => trackPredicate(track, playlistFilter)),
-      map((track) => track.uri),
-      toArray()
+      map((track) => track.uri)
     )
   );
 

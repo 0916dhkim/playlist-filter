@@ -1,4 +1,8 @@
-import { Observable } from "rxjs";
+import { Observable, lastValueFrom, toArray } from "rxjs";
+
+export function toPromise<T>(observable: Observable<T>): Promise<T[]> {
+  return lastValueFrom(observable.pipe(toArray()));
+}
 
 export function pairByKey<
   KeyName extends string | number | symbol,

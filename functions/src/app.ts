@@ -6,12 +6,12 @@ import {
   getPlaylists,
   getTracks,
 } from "./services/spotify";
-import { from, lastValueFrom, toArray } from "rxjs";
 
 import cors from "cors";
 import env from "./env";
 import express from "express";
 import morgan from "morgan";
+import { toPromise } from "./utils";
 import { validateFirebaseIdToken } from "./middleware";
 import z from "zod";
 
@@ -54,9 +54,7 @@ app.post("/connect-spotify", async (req, res, next) => {
 app.get("/playlists", async (req, res, next) => {
   try {
     const accessToken = await getValidToken(req.uid);
-    const playlists = await lastValueFrom(
-      from(getPlaylists(accessToken)).pipe(toArray())
-    );
+    const playlists = await toPromise(getPlaylists(accessToken));
 
     return res.json({
       playlists,
@@ -79,9 +77,7 @@ app.get("/playlists/:id", async (req, res, next) => {
 app.get("/playlists/:id/tracks", async (req, res, next) => {
   try {
     const accessToken = await getValidToken(req.uid);
-    const tracks = await lastValueFrom(
-      getTracks(accessToken, req.params.id).pipe(toArray())
-    );
+    const tracks = await toPromise(getTracks(accessToken, req.params.id));
     const audioFeatureRanges = calculateAudioFeatureRanges(tracks);
     return res.json({
       tracks,
