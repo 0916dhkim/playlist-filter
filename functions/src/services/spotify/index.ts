@@ -1,7 +1,7 @@
 import {
   ALL_AUDIO_FEATURES,
+  AudioFeatureRanges,
   Playlist,
-  PlaylistFilter,
   Track,
 } from "../../models";
 import {
@@ -108,9 +108,12 @@ export function getTracks(
   return assembleTracks(rawTracks$, audioFeatures$);
 }
 
-function trackPredicate(track: Track, playlistFilter: PlaylistFilter): boolean {
+function trackPredicate(
+  track: Track,
+  audioFeatureRanges: AudioFeatureRanges
+): boolean {
   for (const feature of ALL_AUDIO_FEATURES) {
-    const targetRange = playlistFilter[feature];
+    const targetRange = audioFeatureRanges[feature];
     const featureValue = track[feature];
     if (targetRange == null) {
       continue;
@@ -129,13 +132,13 @@ export async function exportPlaylist(
   accessToken: string,
   originalPlaylistId: string,
   playlistName: string,
-  playlistFilter: PlaylistFilter
+  audioFeatureRanges: AudioFeatureRanges
 ): Promise<string> {
   const me = await runRequest(meRequest, { accessToken });
 
   const trackUris = await toPromise(
     getTracks(accessToken, originalPlaylistId).pipe(
-      filter((track) => trackPredicate(track, playlistFilter)),
+      filter((track) => trackPredicate(track, audioFeatureRanges)),
       map((track) => track.uri)
     )
   );

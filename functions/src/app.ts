@@ -1,4 +1,4 @@
-import { calculateAudioFeatureRanges, playlistFilterSchema } from "./models";
+import { ALL_AUDIO_FEATURES, calculateAudioFeatureRanges } from "./models";
 import { connectSpotify, getValidToken } from "./services/firebase";
 import {
   exportPlaylist,
@@ -11,6 +11,7 @@ import cors from "cors";
 import env from "./env";
 import express from "express";
 import morgan from "morgan";
+import { stringLiteralUnion } from "./schema";
 import { toPromise } from "./utils";
 import { validateFirebaseIdToken } from "./middleware";
 import z from "zod";
@@ -93,7 +94,13 @@ app.post("/playlists/:id/export", async (req, res, next) => {
     const { playlistName, filter } = z
       .object({
         playlistName: z.string(),
-        filter: playlistFilterSchema,
+        filter: z.record(
+          stringLiteralUnion(...ALL_AUDIO_FEATURES),
+          z.object({
+            min: z.number(),
+            max: z.number(),
+          })
+        ),
       })
       .parse(req.body);
     const accessToken = await getValidToken(req.uid);

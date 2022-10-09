@@ -1,5 +1,3 @@
-import z, { ZodLiteral } from "zod";
-
 export type Playlist = {
   id: string;
   name: string;
@@ -56,24 +54,6 @@ export type AudioFeature = typeof ALL_AUDIO_FEATURES[number];
 export type AudioFeatureRanges = {
   [F in AudioFeature]?: { min: number; max: number };
 };
-
-function literalArray<TLiterals extends (string | number)[]>(
-  ...literals: TLiterals
-) {
-  return literals.map((each) => z.literal(each)) as {
-    [K in keyof TLiterals]: ZodLiteral<TLiterals[K]>;
-  };
-}
-
-export const playlistFilterSchema = z.record(
-  z.union(literalArray(...ALL_AUDIO_FEATURES)),
-  z.object({
-    min: z.number(),
-    max: z.number(),
-  })
-);
-// TODO: Reduce repetition by using infer.
-export type PlaylistFilter = z.infer<typeof playlistFilterSchema>;
 
 export function calculateAudioFeatureRanges(
   tracks: Track[]
