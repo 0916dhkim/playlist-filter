@@ -1,4 +1,4 @@
-import { Request, buildRequest } from "../../request";
+import { Request, buildRequest } from "../../lib/request";
 
 import env from "../../env";
 import { z } from "zod";

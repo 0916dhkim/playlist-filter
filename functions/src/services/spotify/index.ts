@@ -13,7 +13,7 @@ import {
   identity,
   map,
 } from "rxjs";
-import { ResponseOf, runRequest } from "../../request";
+import { ResponseOf, runRequest } from "../../lib/request";
 import {
   audioFeaturesRequest,
   meRequest,
@@ -25,7 +25,7 @@ import {
   trackAddRequest,
   tracksRequest,
 } from "./api";
-import { pairByKey, toPromise } from "../../utils";
+import { pairByKey, toPromise } from "../../lib/observable";
 
 export async function getTokenWithAuthorizationCode(code: string): Promise<{
   accessToken: string;

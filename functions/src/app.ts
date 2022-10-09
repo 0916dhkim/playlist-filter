@@ -11,8 +11,8 @@ import cors from "cors";
 import env from "./env";
 import express from "express";
 import morgan from "morgan";
-import { stringLiteralUnion } from "./schema";
-import { toPromise } from "./utils";
+import { stringLiteralUnion } from "./lib/schema";
+import { toPromise } from "./lib/observable";
 import { validateFirebaseIdToken } from "./middleware";
 import z from "zod";
 
