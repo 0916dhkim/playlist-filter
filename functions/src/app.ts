@@ -52,7 +52,9 @@ app.post("/connect-spotify", async (req, res, next) => {
 
 app.get("/playlists", async (req, res, next) => {
   try {
-    const playlists = await toPromise(spotifyService.getPlaylists(req.uid));
+    const playlists = await toPromise(
+      spotifyService.getPlaylists(spotifyService.getValidToken(req.uid))
+    );
 
     return res.json({
       playlists,
@@ -64,7 +66,10 @@ app.get("/playlists", async (req, res, next) => {
 
 app.get("/playlists/:id", async (req, res, next) => {
   try {
-    const playlist = await spotifyService.getPlaylist(req.uid, req.params.id);
+    const playlist = await spotifyService.getPlaylist(
+      spotifyService.getValidToken(req.uid),
+      req.params.id
+    );
     return res.json({ playlist });
   } catch (err) {
     return next(err);
@@ -74,7 +79,10 @@ app.get("/playlists/:id", async (req, res, next) => {
 app.get("/playlists/:id/tracks", async (req, res, next) => {
   try {
     const tracks = await toPromise(
-      spotifyService.getTracks(req.uid, req.params.id)
+      spotifyService.getTracks(
+        spotifyService.getValidToken(req.uid),
+        req.params.id
+      )
     );
     const audioFeatureRanges = calculateAudioFeatureRanges(tracks);
     return res.json({
@@ -101,7 +109,7 @@ app.post("/playlists/:id/export", async (req, res, next) => {
       })
       .parse(req.body);
     const playlistId = await spotifyService.exportPlaylist(
-      req.uid,
+      spotifyService.getValidToken(req.uid),
       req.params.id,
       playlistName,
       filter

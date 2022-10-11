@@ -7,7 +7,9 @@ import {
 import {
   Observable,
   bufferCount,
+  combineLatest,
   concatMap,
+  filter,
   from,
   identity,
   map,
@@ -75,123 +77,129 @@ function trackPredicate(
   return true;
 }
 
-// TODO: find a better name.
-function getTracks(accessToken: string, playlistId: string): Observable<Track> {
-  const rawTracks$ = from(
-    runRequest(tracksRequest, {
-      accessToken,
-      playlistId,
-      limit: 50, // TODO: do actual batching.
-    })
-  ).pipe(concatMap(identity), share());
-  const audioFeatures$ = rawTracks$.pipe(
-    map((rawTrack) => rawTrack.id),
-    bufferCount(50),
-    concatMap((trackIds) =>
-      runRequest(audioFeaturesRequest, {
-        accessToken,
-        trackIds,
-      })
-    ),
-    concatMap(identity)
-  );
-  return assembleTracks(rawTracks$, audioFeatures$);
-}
-
 export const SpotifyService = (firebaseService: FirebaseService) => {
-  const getRefreshedToken = (refreshToken: string) =>
-    runRequest(tokenRefreshRequest, { refreshToken });
-
-  const getValidToken = async (uid: string): Promise<string> => {
+  async function getValidToken(uid: string): Promise<string> {
     const now = Math.floor(new Date().getTime() / 1000);
-    const spotifyAuth = await firebaseService.getAuthDoc(uid);
-    invariant(spotifyAuth); // TODO: Handle this case.
-    const { accessToken, refreshToken, expiresAt } = spotifyAuth;
-    if (expiresAt <= now) {
-      const refreshed = await getRefreshedToken(refreshToken);
+    const authDoc = await firebaseService.getAuthDoc(uid);
+    invariant(authDoc); // TODO: Handle this case.
+
+    if (authDoc.expiresAt <= now) {
+      const refreshed = await runRequest(tokenRefreshRequest, {
+        refreshToken: authDoc.refreshToken,
+      });
       await firebaseService.updateAuthDoc(uid, {
         accessToken: refreshed.accessToken,
         expiresAt: now + refreshed.expiresIn,
       });
       return refreshed.accessToken;
     }
-    return accessToken;
-  };
+    return authDoc.accessToken;
+  }
 
-  const getTokenWithAuthorizationCode = async (code: string) =>
-    runRequest(tokenRequest, { code });
+  async function connectSpotify(uid: string, code: string): Promise<void> {
+    const { accessToken, refreshToken, expiresIn } = await runRequest(
+      tokenRequest,
+      { code }
+    );
+    const now = Math.floor(new Date().getTime() / 1000);
+
+    await firebaseService.createAuthDoc(uid, {
+      accessToken,
+      refreshToken,
+      expiresAt: now + expiresIn,
+    });
+  }
+
+  function getPlaylists(accessToken$: Promise<string>): Observable<Playlist> {
+    return from(accessToken$).pipe(
+      concatMap((accessToken) =>
+        runRequest(playlistsRequest, {
+          accessToken,
+          limit: 50, // TODO: do actual batching.
+        })
+      ),
+      concatMap(identity)
+    );
+  }
+
+  async function getPlaylist(
+    accessToken$: Promise<string>,
+    playlistId: string
+  ): Promise<Playlist> {
+    return runRequest(playlistRequest, {
+      accessToken: await accessToken$,
+      playlistId,
+    });
+  }
+
+  function getTracks(
+    accessToken$: Promise<string>,
+    playlistId: string
+  ): Observable<Track> {
+    const rawTracks$ = from(accessToken$).pipe(
+      concatMap((accessToken) =>
+        runRequest(tracksRequest, {
+          accessToken,
+          playlistId,
+          limit: 50, // TODO: do actual batching.
+        })
+      ),
+      concatMap(identity),
+      share()
+    );
+    const trackIds$ = rawTracks$.pipe(
+      map((track) => track.id),
+      bufferCount(50)
+    );
+    const audioFeatures$ = combineLatest([accessToken$, trackIds$]).pipe(
+      concatMap(([accessToken, trackIds]) =>
+        runRequest(audioFeaturesRequest, {
+          accessToken,
+          trackIds,
+        })
+      ),
+      concatMap(identity)
+    );
+    return assembleTracks(rawTracks$, audioFeatures$);
+  }
+
+  async function exportPlaylist(
+    accessToken$: Promise<string>,
+    originalPlaylistId: string,
+    playlistName: string,
+    audioFeatureRanges: AudioFeatureRanges
+  ): Promise<string> {
+    const me$ = runRequest(meRequest, { accessToken: await accessToken$ });
+
+    const trackUris$ = toPromise(
+      getTracks(accessToken$, originalPlaylistId).pipe(
+        filter((track) => trackPredicate(track, audioFeatureRanges)),
+        map((track) => track.id)
+      )
+    );
+
+    const playlistId$ = runRequest(playlistCreateRequest, {
+      accessToken: await accessToken$,
+      playlistName,
+      userId: (await me$).id,
+    });
+
+    await runRequest(trackAddRequest, {
+      accessToken: await accessToken$,
+      playlistId: await playlistId$,
+      trackUris: await trackUris$,
+    });
+
+    return playlistId$;
+  }
 
   return {
-    async connectSpotify(uid: string, code: string): Promise<void> {
-      const { accessToken, refreshToken, expiresIn } =
-        await getTokenWithAuthorizationCode(code);
-      const now = Math.floor(new Date().getTime() / 1000);
-
-      await firebaseService.createAuthDoc(uid, {
-        accessToken,
-        refreshToken,
-        expiresAt: now + expiresIn,
-      });
-    },
-
-    getRefreshedToken,
-
-    getPlaylists(uid: string): Observable<Playlist> {
-      return from(getValidToken(uid)).pipe(
-        concatMap((accessToken) =>
-          runRequest(playlistsRequest, {
-            accessToken,
-            limit: 50, // TODO: do actual batching.
-          })
-        ),
-        concatMap(identity)
-      );
-    },
-
-    async getPlaylist(uid: string, playlistId: string): Promise<Playlist> {
-      const accessToken = await getValidToken(uid);
-      const playlist = await runRequest(playlistRequest, {
-        accessToken,
-        playlistId,
-      });
-      return playlist;
-    },
-
-    getTracks(uid: string, playlistId: string): Observable<Track> {
-      return from(getValidToken(uid)).pipe(
-        concatMap((accessToken) => getTracks(accessToken, playlistId))
-      );
-    },
-
-    async exportPlaylist(
-      uid: string,
-      originalPlaylistId: string,
-      playlistName: string,
-      audioFeatureRanges: AudioFeatureRanges
-    ): Promise<string> {
-      const accessToken = await getValidToken(uid);
-      const me = await runRequest(meRequest, { accessToken });
-
-      const trackUris = (
-        await toPromise(getTracks(accessToken, originalPlaylistId))
-      )
-        .filter((track) => trackPredicate(track, audioFeatureRanges))
-        .map((track) => track.uri);
-
-      const playlistId = await runRequest(playlistCreateRequest, {
-        accessToken,
-        playlistName,
-        userId: me.id,
-      });
-
-      await runRequest(trackAddRequest, {
-        accessToken,
-        playlistId,
-        trackUris,
-      });
-
-      return playlistId;
-    },
+    getValidToken,
+    connectSpotify,
+    getPlaylists,
+    getPlaylist,
+    getTracks,
+    exportPlaylist,
   };
 };
 
