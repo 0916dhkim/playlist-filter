@@ -147,11 +147,11 @@ export const SpotifyService = (firebaseService: FirebaseService) => {
       concatMap(identity),
       share()
     );
-    const trackIds$ = rawTracks$.pipe(
+    const trackIdBatch$ = rawTracks$.pipe(
       map((track) => track.id),
       bufferCount(50)
     );
-    const audioFeatures$ = combineLatest([accessToken$, trackIds$]).pipe(
+    const audioFeatures$ = combineLatest([accessToken$, trackIdBatch$]).pipe(
       concatMap(([accessToken, trackIds]) =>
         runRequest(audioFeaturesRequest, {
           accessToken,
@@ -163,14 +163,24 @@ export const SpotifyService = (firebaseService: FirebaseService) => {
     return assembleTracks(rawTracks$, audioFeatures$);
   }
 
+  async function createPlaylist(
+    accessToken$: Promise<string>,
+    playlistName: string
+  ): Promise<string> {
+    const me$ = runRequest(meRequest, { accessToken: await accessToken$ });
+    return runRequest(playlistCreateRequest, {
+      accessToken: await accessToken$,
+      playlistName,
+      userId: (await me$).id,
+    });
+  }
+
   async function exportPlaylist(
     accessToken$: Promise<string>,
     originalPlaylistId: string,
     playlistName: string,
     audioFeatureRanges: AudioFeatureRanges
   ): Promise<string> {
-    const me$ = runRequest(meRequest, { accessToken: await accessToken$ });
-
     const trackUris$ = toPromise(
       getTracks(accessToken$, originalPlaylistId).pipe(
         filter((track) => trackPredicate(track, audioFeatureRanges)),
@@ -178,11 +188,7 @@ export const SpotifyService = (firebaseService: FirebaseService) => {
       )
     );
 
-    const playlistId$ = runRequest(playlistCreateRequest, {
-      accessToken: await accessToken$,
-      playlistName,
-      userId: (await me$).id,
-    });
+    const playlistId$ = createPlaylist(accessToken$, playlistName);
 
     await runRequest(trackAddRequest, {
       accessToken: await accessToken$,
