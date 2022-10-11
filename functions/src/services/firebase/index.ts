@@ -1,79 +1,63 @@
+import { App, initializeApp } from "firebase-admin/app";
 import { CollectionSpec, DocOf, spotifyAuthCollection } from "./collections";
-import { getRefreshedToken, getTokenWithAuthorizationCode } from "../spotify";
 
 import admin from "firebase-admin";
 import { getFirestore } from "firebase-admin/firestore";
-import { initializeApp } from "firebase-admin/app";
-import invariant from "tiny-invariant";
 
-initializeApp();
+let app: App | null = null;
 
-const db = getFirestore();
-
-export async function getUidByIdToken(idToken: string): Promise<string> {
-  const decodedIdToken = await admin.auth().verifyIdToken(idToken);
-  return decodedIdToken.uid;
-}
-
-async function getDoc<TCollectionSpec extends CollectionSpec<any>>(
-  collectionSpec: TCollectionSpec,
-  id: string
-): Promise<DocOf<TCollectionSpec> | undefined> {
-  const docRef = db.collection(collectionSpec.name).doc(id);
-  const doc = await docRef.get();
-  const docData = doc.data();
-
-  if (docData == null) {
-    return undefined;
+export const FirebaseService = () => {
+  if (app == null) {
+    app = initializeApp();
   }
-  return collectionSpec.schema.parse(docData);
-}
+  const db = getFirestore(app);
 
-async function createDoc<TCollectionSpec extends CollectionSpec<any>>(
-  collectionSpec: TCollectionSpec,
-  id: string,
-  data: DocOf<TCollectionSpec>
-): Promise<void> {
-  const docRef = db.collection(collectionSpec.name).doc(id);
-  await docRef.set(data);
-}
+  async function getDoc<TCollectionSpec extends CollectionSpec<any>>(
+    collectionSpec: TCollectionSpec,
+    id: string
+  ): Promise<DocOf<TCollectionSpec> | undefined> {
+    const docRef = db.collection(collectionSpec.name).doc(id);
+    const doc = await docRef.get();
+    const docData = doc.data();
 
-async function updateDoc<TCollectionSpec extends CollectionSpec<any>>(
-  collectionSpec: TCollectionSpec,
-  id: string,
-  data: Partial<DocOf<TCollectionSpec>>
-): Promise<void> {
-  const docRef = db.collection(collectionSpec.name).doc(id);
-  await docRef.update(data);
-}
-
-/**
- * Get an access token that is not expired.
- */
-export async function getValidToken(uid: string): Promise<string> {
-  const now = Math.floor(new Date().getTime() / 1000);
-  const spotifyAuth = await getDoc(spotifyAuthCollection, uid);
-  invariant(spotifyAuth); // TODO: Handle this case.
-  const { accessToken, refreshToken, expiresAt } = spotifyAuth;
-  if (expiresAt <= now) {
-    const refreshed = await getRefreshedToken(refreshToken);
-    await updateDoc(spotifyAuthCollection, uid, {
-      accessToken: refreshed.accessToken,
-      expiresAt: now + refreshed.expiresIn,
-    });
-    return refreshed.accessToken;
+    if (docData == null) {
+      return undefined;
+    }
+    return collectionSpec.schema.parse(docData);
   }
-  return accessToken;
-}
 
-export async function connectSpotify(uid: string, code: string): Promise<void> {
-  const { accessToken, refreshToken, expiresIn } =
-    await getTokenWithAuthorizationCode(code);
-  const now = Math.floor(new Date().getTime() / 1000);
+  async function createDoc<TCollectionSpec extends CollectionSpec<any>>(
+    collectionSpec: TCollectionSpec,
+    id: string,
+    data: DocOf<TCollectionSpec>
+  ): Promise<void> {
+    const docRef = db.collection(collectionSpec.name).doc(id);
+    await docRef.set(data);
+  }
 
-  await createDoc(spotifyAuthCollection, uid, {
-    accessToken,
-    refreshToken,
-    expiresAt: now + expiresIn,
-  });
-}
+  async function updateDoc<TCollectionSpec extends CollectionSpec<any>>(
+    collectionSpec: TCollectionSpec,
+    id: string,
+    data: Partial<DocOf<TCollectionSpec>>
+  ): Promise<void> {
+    const docRef = db.collection(collectionSpec.name).doc(id);
+    await docRef.update(data);
+  }
+
+  return {
+    async getUidByIdToken(idToken: string): Promise<string> {
+      const decodedIdToken = await admin.auth().verifyIdToken(idToken);
+      return decodedIdToken.uid;
+    },
+
+    getAuthDoc: (uid: string) => getDoc(spotifyAuthCollection, uid),
+    updateAuthDoc: (
+      uid: string,
+      data: Partial<DocOf<typeof spotifyAuthCollection>>
+    ) => updateDoc(spotifyAuthCollection, uid, data),
+    createAuthDoc: (uid: string, data: DocOf<typeof spotifyAuthCollection>) =>
+      createDoc(spotifyAuthCollection, uid, data),
+  };
+};
+
+export type FirebaseService = ReturnType<typeof FirebaseService>;

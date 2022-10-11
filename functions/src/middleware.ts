@@ -1,5 +1,7 @@
+import { FirebaseService } from "./services/firebase";
 import { Handler } from "express";
-import { getUidByIdToken } from "./services/firebase";
+
+const firebaseService = FirebaseService();
 
 export const validateFirebaseIdToken: Handler = async (req, res, next) => {
   // Read the ID Token from the Authorization header.
@@ -10,7 +12,7 @@ export const validateFirebaseIdToken: Handler = async (req, res, next) => {
   }
 
   try {
-    req.uid = await getUidByIdToken(idToken);
+    req.uid = await firebaseService.getUidByIdToken(idToken);
     next();
     return;
   } catch (error) {

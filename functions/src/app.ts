@@ -1,12 +1,7 @@
 import { ALL_AUDIO_FEATURES, calculateAudioFeatureRanges } from "./models";
-import { connectSpotify, getValidToken } from "./services/firebase";
-import {
-  exportPlaylist,
-  getPlaylist,
-  getPlaylists,
-  getTracks,
-} from "./services/spotify";
 
+import { FirebaseService } from "./services/firebase";
+import { SpotifyService } from "./services/spotify";
 import cors from "cors";
 import env from "./env";
 import express from "express";
@@ -15,6 +10,9 @@ import { stringLiteralUnion } from "./lib/schema";
 import { toPromise } from "./lib/observable";
 import { validateFirebaseIdToken } from "./middleware";
 import z from "zod";
+
+const firebaseService = FirebaseService();
+const spotifyService = SpotifyService(firebaseService);
 
 const app = express();
 
@@ -44,7 +42,7 @@ app.post("/connect-spotify", async (req, res, next) => {
       return res.status(400).send("No code provided");
     }
 
-    await connectSpotify(req.uid, code);
+    await spotifyService.connectSpotify(req.uid, code);
 
     return res.sendStatus(200);
   } catch (err) {
@@ -54,8 +52,7 @@ app.post("/connect-spotify", async (req, res, next) => {
 
 app.get("/playlists", async (req, res, next) => {
   try {
-    const accessToken = await getValidToken(req.uid);
-    const playlists = await toPromise(getPlaylists(accessToken));
+    const playlists = await toPromise(spotifyService.getPlaylists(req.uid));
 
     return res.json({
       playlists,
@@ -67,8 +64,7 @@ app.get("/playlists", async (req, res, next) => {
 
 app.get("/playlists/:id", async (req, res, next) => {
   try {
-    const accessToken = await getValidToken(req.uid);
-    const playlist = await getPlaylist(accessToken, req.params.id);
+    const playlist = await spotifyService.getPlaylist(req.uid, req.params.id);
     return res.json({ playlist });
   } catch (err) {
     return next(err);
@@ -77,8 +73,9 @@ app.get("/playlists/:id", async (req, res, next) => {
 
 app.get("/playlists/:id/tracks", async (req, res, next) => {
   try {
-    const accessToken = await getValidToken(req.uid);
-    const tracks = await toPromise(getTracks(accessToken, req.params.id));
+    const tracks = await toPromise(
+      spotifyService.getTracks(req.uid, req.params.id)
+    );
     const audioFeatureRanges = calculateAudioFeatureRanges(tracks);
     return res.json({
       tracks,
@@ -103,9 +100,8 @@ app.post("/playlists/:id/export", async (req, res, next) => {
         ),
       })
       .parse(req.body);
-    const accessToken = await getValidToken(req.uid);
-    const playlistId = await exportPlaylist(
-      accessToken,
+    const playlistId = await spotifyService.exportPlaylist(
+      req.uid,
       req.params.id,
       playlistName,
       filter
