@@ -1,20 +1,14 @@
-import {
-  ALL_AUDIO_FEATURES,
-  AudioFeatureRanges,
-  PlaylistFilter,
-} from "../../api/types";
-import { Atom, WritableAtom, useAtomValue, useSetAtom } from "jotai";
 import { FormEventHandler, ReactElement, useCallback } from "react";
-import { FormMolecule, FormState } from "../../state/formState";
+import { useAtomValue, useSetAtom } from "jotai";
 
+import { ALL_AUDIO_FEATURES } from "../../api/types";
 import AudioFeatureRangeInput from "./AudioFeatureRangeInput";
+import { FormMolecule } from "../../state/formState";
 import PlaylistNameInput from "./PlaylistNameInput";
-import { getTracks } from "../../api/queries";
 import invariant from "tiny-invariant";
 import { isDefined } from "../../typeHelpers";
 import { useAtomCallback } from "jotai/utils";
 import { useExportPlaylistMutation } from "../../api/mutations";
-import { useQuery } from "@tanstack/react-query";
 
 type FilterFormProps = {
   playlistId: string;
@@ -25,7 +19,6 @@ export default function FilterForm({
   playlistId,
   formMolecule: {
     formAtom,
-    initializeFormAtom,
     canFinishEditingAtom,
     finishEditingAtom,
     exportVariablesAtom,
@@ -33,13 +26,7 @@ export default function FilterForm({
 }: FilterFormProps): ReactElement | null {
   const state = useAtomValue(formAtom);
   const canFinishEditing = useAtomValue(canFinishEditingAtom);
-  const initializeForm = useSetAtom(initializeFormAtom);
   const finishEditing = useSetAtom(finishEditingAtom);
-  useQuery(...getTracks(playlistId), {
-    onSuccess: ({ audioFeatureRanges }) => {
-      initializeForm(audioFeatureRanges);
-    },
-  });
   const exportMutation = useExportPlaylistMutation();
   const exportPlaylist = useAtomCallback(
     useCallback(
