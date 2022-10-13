@@ -1,4 +1,7 @@
-import { ALL_AUDIO_FEATURES, calculateAudioFeatureRanges } from "./models";
+import {
+  audioFeatureRangesSchema,
+  calculateAudioFeatureRanges,
+} from "./models";
 
 import { FirebaseService } from "./services/firebase";
 import { SpotifyService } from "./services/spotify";
@@ -6,7 +9,6 @@ import cors from "cors";
 import env from "./env";
 import express from "express";
 import morgan from "morgan";
-import { stringLiteralUnion } from "./lib/schema";
 import { toPromise } from "./lib/observable";
 import { validateFirebaseIdToken } from "./middleware";
 import z from "zod";
@@ -99,13 +101,7 @@ app.post("/playlists/:id/export", async (req, res, next) => {
     const { playlistName, filter } = z
       .object({
         playlistName: z.string(),
-        filter: z.record(
-          stringLiteralUnion(...ALL_AUDIO_FEATURES),
-          z.object({
-            min: z.number(),
-            max: z.number(),
-          })
-        ),
+        filter: audioFeatureRangesSchema,
       })
       .parse(req.body);
     const playlistId = await spotifyService.exportPlaylist(

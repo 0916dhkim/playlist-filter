@@ -1,3 +1,6 @@
+import { stringLiteralUnion } from "./lib/schema";
+import { z } from "zod";
+
 export type Playlist = {
   id: string;
   name: string;
@@ -50,10 +53,18 @@ export const ALL_AUDIO_FEATURES = [
   "tempo",
   "valence",
 ] as const;
-export type AudioFeature = typeof ALL_AUDIO_FEATURES[number];
-export type AudioFeatureRanges = {
-  [F in AudioFeature]?: { min: number; max: number };
-};
+
+export const audioFeatureSchema = stringLiteralUnion(...ALL_AUDIO_FEATURES);
+export type AudioFeature = z.infer<typeof audioFeatureSchema>;
+
+export const audioFeatureRangesSchema = z.record(
+  audioFeatureSchema,
+  z.object({
+    min: z.number(),
+    max: z.number(),
+  })
+);
+export type AudioFeatureRanges = z.infer<typeof audioFeatureRangesSchema>;
 
 export function calculateAudioFeatureRanges(
   tracks: Track[]
