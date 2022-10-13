@@ -13,7 +13,10 @@ import {
   from,
   identity,
   map,
+  merge,
+  partition,
   share,
+  tap,
 } from "rxjs";
 import { ResponseOf, runRequest } from "../../lib/request";
 import {
@@ -132,6 +135,41 @@ export const SpotifyService = (firebaseService: FirebaseService) => {
     });
   }
 
+  function getAudioFeatures(
+    accessToken$: Promise<string>,
+    trackId$: Observable<string>
+  ): Observable<ResponseOf<typeof audioFeaturesRequest>[number]> {
+    const trackIdWithCache$ = trackId$.pipe(
+      concatMap((trackId) =>
+        firebaseService
+          .getAudioFeaturesCache(trackId)
+          .then((cache) => (cache ? { id: trackId, ...cache } : trackId))
+      )
+    );
+
+    const [trackIdWithoutCache$, cachedAudioFeatures$] = partition(
+      trackIdWithCache$,
+      (value): value is string => typeof value === "string"
+    );
+
+    const trackIdBatch$ = trackIdWithoutCache$.pipe(bufferCount(50));
+
+    const fetchedAudioFeatures$ = combineLatest([
+      accessToken$,
+      trackIdBatch$,
+    ]).pipe(
+      concatMap(([accessToken, trackIds]) =>
+        runRequest(audioFeaturesRequest, { accessToken, trackIds })
+      ),
+      concatMap(identity),
+      tap((audioFeatures) =>
+        firebaseService.setAudioFeaturesCache(audioFeatures.id, audioFeatures)
+      )
+    );
+
+    return merge(cachedAudioFeatures$, fetchedAudioFeatures$);
+  }
+
   function getTracks(
     accessToken$: Promise<string>,
     playlistId: string
@@ -147,19 +185,8 @@ export const SpotifyService = (firebaseService: FirebaseService) => {
       concatMap(identity),
       share()
     );
-    const trackIdBatch$ = rawTracks$.pipe(
-      map((track) => track.id),
-      bufferCount(50)
-    );
-    const audioFeatures$ = combineLatest([accessToken$, trackIdBatch$]).pipe(
-      concatMap(([accessToken, trackIds]) =>
-        runRequest(audioFeaturesRequest, {
-          accessToken,
-          trackIds,
-        })
-      ),
-      concatMap(identity)
-    );
+    const trackIds$ = rawTracks$.pipe(map((track) => track.id));
+    const audioFeatures$ = getAudioFeatures(accessToken$, trackIds$);
     return assembleTracks(rawTracks$, audioFeatures$);
   }
 

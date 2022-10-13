@@ -19,4 +19,7 @@ export default {
   get SPOTIFY_CLIENT_SECRET() {
     return requireEnv("SPOTIFY_CLIENT_SECRET");
   },
+  get CACHE_LIFESPAN() {
+    return Number(requireEnv("CACHE_TTL", "3600"));
+  },
 };

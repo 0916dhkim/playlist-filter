@@ -1,7 +1,13 @@
 import { App, initializeApp } from "firebase-admin/app";
-import { CollectionSpec, DocOf, spotifyAuthCollection } from "./collections";
+import {
+  CollectionSpec,
+  DocOf,
+  audioFeaturesCacheCollection,
+  spotifyAuthCollection,
+} from "./collections";
 
 import admin from "firebase-admin";
+import env from "../../env";
 import { getFirestore } from "firebase-admin/firestore";
 
 let app: App | null = null;
@@ -57,6 +63,25 @@ export const FirebaseService = () => {
     ) => updateDoc(spotifyAuthCollection, uid, data),
     createAuthDoc: (uid: string, data: DocOf<typeof spotifyAuthCollection>) =>
       createDoc(spotifyAuthCollection, uid, data),
+    getAudioFeaturesCache: async (trackId: string) => {
+      const doc = await getDoc(audioFeaturesCacheCollection, trackId);
+      if (doc == null) {
+        return undefined;
+      }
+      const now = Math.floor(new Date().getTime() / 1000);
+      if (doc.expiresAt <= now) {
+        return undefined;
+      }
+      return doc.audioFeatures;
+    },
+    setAudioFeaturesCache: (
+      trackId: string,
+      data: DocOf<typeof audioFeaturesCacheCollection>["audioFeatures"]
+    ) =>
+      createDoc(audioFeaturesCacheCollection, trackId, {
+        expiresAt: env.CACHE_LIFESPAN + Math.floor(new Date().getTime() / 1000),
+        audioFeatures: data,
+      }),
   };
 };
 
