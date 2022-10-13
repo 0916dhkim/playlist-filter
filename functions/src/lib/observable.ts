@@ -1,8 +1,35 @@
-import { Observable, lastValueFrom, toArray } from "rxjs";
+import {
+  Observable,
+  OperatorFunction,
+  lastValueFrom,
+  merge,
+  partition,
+  toArray,
+} from "rxjs";
 
 export function toPromise<T>(observable: Observable<T>): Promise<T[]> {
   return lastValueFrom(observable.pipe(toArray()));
 }
+
+/**
+ * RxJS operator.
+ *
+ * Split the source observable into two observables with predicate.
+ * Pipe each partition into corresponding operator & merge into single observable.
+ */
+export const partitionMerge =
+  <TSource, TMatch extends TSource, TOut1, TOut2>(
+    predicate: (value: TSource) => value is TMatch,
+    operatorForMatched: OperatorFunction<TMatch, TOut1>,
+    operatorForUnmatched: OperatorFunction<Exclude<TSource, TMatch>, TOut2>
+  ) =>
+  (observable: Observable<TSource>): Observable<TOut1 | TOut2> => {
+    const [matched$, unmatched$] = partition(observable, predicate);
+    return merge(
+      matched$.pipe(operatorForMatched),
+      unmatched$.pipe(operatorForUnmatched)
+    );
+  };
 
 export function pairByKey<
   KeyName extends string | number | symbol,

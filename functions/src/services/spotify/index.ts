@@ -7,14 +7,13 @@ import {
 import {
   Observable,
   bufferCount,
-  combineLatest,
+  combineLatestWith,
   concatMap,
   filter,
   from,
   identity,
   map,
-  merge,
-  partition,
+  pipe,
   share,
   tap,
 } from "rxjs";
@@ -30,7 +29,7 @@ import {
   trackAddRequest,
   tracksRequest,
 } from "./api";
-import { pairByKey, toPromise } from "../../lib/observable";
+import { pairByKey, partitionMerge, toPromise } from "../../lib/observable";
 
 import { FirebaseService } from "../firebase";
 import invariant from "tiny-invariant";
@@ -139,35 +138,34 @@ export const SpotifyService = (firebaseService: FirebaseService) => {
     accessToken$: Promise<string>,
     trackId$: Observable<string>
   ): Observable<ResponseOf<typeof audioFeaturesRequest>[number]> {
-    const trackIdWithCache$ = trackId$.pipe(
-      concatMap((trackId) =>
-        firebaseService
-          .getAudioFeaturesCache(trackId)
-          .then((cache) => (cache ? { id: trackId, ...cache } : trackId))
-      )
-    );
-
-    const [trackIdWithoutCache$, cachedAudioFeatures$] = partition(
-      trackIdWithCache$,
-      (value): value is string => typeof value === "string"
-    );
-
-    const trackIdBatch$ = trackIdWithoutCache$.pipe(bufferCount(50));
-
-    const fetchedAudioFeatures$ = combineLatest([
-      accessToken$,
-      trackIdBatch$,
-    ]).pipe(
-      concatMap(([accessToken, trackIds]) =>
-        runRequest(audioFeaturesRequest, { accessToken, trackIds })
+    return trackId$.pipe(
+      concatMap(
+        (trackId) =>
+          firebaseService
+            .getAudioFeaturesCache(trackId)
+            .then((cache) => (cache ? { id: trackId, ...cache } : trackId)) // Push trackId if cache miss. Push cache if hit.
       ),
-      concatMap(identity),
-      tap((audioFeatures) =>
-        firebaseService.setAudioFeaturesCache(audioFeatures.id, audioFeatures)
+      partitionMerge(
+        (value): value is string => typeof value === "string",
+        // if cache miss:
+        pipe(
+          bufferCount(50),
+          combineLatestWith(accessToken$),
+          concatMap(([trackIds, accessToken]) =>
+            runRequest(audioFeaturesRequest, { accessToken, trackIds })
+          ),
+          concatMap(identity),
+          tap((audioFeatures) =>
+            firebaseService.setAudioFeaturesCache(
+              audioFeatures.id,
+              audioFeatures
+            )
+          )
+        ),
+        // if cache hit:
+        identity
       )
     );
-
-    return merge(cachedAudioFeatures$, fetchedAudioFeatures$);
   }
 
   function getTracks(
