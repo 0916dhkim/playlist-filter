@@ -26,11 +26,13 @@ export default function FilterForm({
   formMolecule: {
     formAtom,
     initializeFormAtom,
+    canFinishEditingAtom,
     finishEditingAtom,
     exportVariablesAtom,
   },
 }: FilterFormProps): ReactElement | null {
   const state = useAtomValue(formAtom);
+  const canFinishEditing = useAtomValue(canFinishEditingAtom);
   const initializeForm = useSetAtom(initializeFormAtom);
   const finishEditing = useSetAtom(finishEditingAtom);
   useQuery(...getTracks(playlistId), {
@@ -74,7 +76,7 @@ export default function FilterForm({
               molecule={rangeInputMolecule}
             />
           ))}
-        <button>Next</button>
+        <button disabled={!canFinishEditing}>Next</button>
       </form>
     );
   }

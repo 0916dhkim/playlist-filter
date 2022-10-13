@@ -10,6 +10,7 @@ export type RangeInputMolecule = {
   name: string;
   minAtom: PrimitiveAtom<string>;
   maxAtom: PrimitiveAtom<string>;
+  errorAtom: Atom<string | undefined>;
 };
 
 function RangeInputMolecule(
@@ -17,10 +18,27 @@ function RangeInputMolecule(
   min: number,
   max: number
 ): RangeInputMolecule {
+  const minAtom = atom(min.toString());
+  const maxAtom = atom(max.toString());
+  const errorAtom = atom((get) => {
+    const parsedMin = Number(get(minAtom));
+    if (isNaN(parsedMin)) {
+      return "Invalid lower bound.";
+    }
+    const parsedMax = Number(get(maxAtom));
+    if (isNaN(parsedMax)) {
+      return "Invalid upper bound.";
+    }
+    if (parsedMin > parsedMax) {
+      return "min should not be greater than max.";
+    }
+    return undefined;
+  });
   return {
     name,
-    minAtom: atom(min.toString()),
-    maxAtom: atom(max.toString()),
+    minAtom,
+    maxAtom,
+    errorAtom,
   };
 }
 
@@ -60,6 +78,7 @@ function AudioFeatureRangesMolecule(audioFeatureRanges: AudioFeatureRanges) {
 export type FormMolecule = {
   formAtom: Atom<FormState>;
   initializeFormAtom: WritableAtom<null, AudioFeatureRanges, void>;
+  canFinishEditingAtom: Atom<boolean>;
   finishEditingAtom: WritableAtom<null, unknown, void>;
   exportVariablesAtom: Atom<{
     playlistName: string;
@@ -69,6 +88,19 @@ export type FormMolecule = {
 
 export function FormMolecule() {
   const baseAtom = atom<FormState>({ stage: "uninitialized" });
+  const canFinishEditingAtom = atom((get) => {
+    const prev = get(baseAtom);
+    if (prev.stage !== "editing") {
+      return false;
+    }
+    for (const feature of ALL_AUDIO_FEATURES) {
+      const rangeInputMolecule = prev.audioFeatureRanges[feature];
+      if (rangeInputMolecule && get(rangeInputMolecule.errorAtom)) {
+        return false;
+      }
+    }
+    return true;
+  });
   return {
     formAtom: atom((get) => get(baseAtom)),
     initializeFormAtom: atom(
@@ -83,9 +115,11 @@ export function FormMolecule() {
         }
       }
     ),
+    canFinishEditingAtom,
     finishEditingAtom: atom(null, (get, set) => {
       const prev = get(baseAtom);
-      if (prev.stage === "editing") {
+      const canFinishEditing = get(canFinishEditingAtom);
+      if (prev.stage === "editing" && canFinishEditing) {
         set(baseAtom, {
           stage: "exporting",
           audioFeatureRanges: prev.audioFeatureRanges,
