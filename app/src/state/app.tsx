@@ -1,6 +1,5 @@
-import { Atom, WritableAtom, atom } from "jotai";
-import { AudioFeatureRanges, PlaylistFilter } from "../api/types";
-import { FormState, makeFormAtoms } from "./formState";
+import { FormMolecule } from "./formState";
+import { atom } from "jotai";
 
 type AppState =
   | {
@@ -8,13 +7,7 @@ type AppState =
     }
   | {
       selectedPlaylistId: string;
-      formAtom: Atom<FormState>;
-      initializeFormAtom: WritableAtom<null, AudioFeatureRanges, void>;
-      finishEditingAtom: WritableAtom<null, unknown, void>;
-      exportVariablesAtom: Atom<{
-        playlistName: string;
-        filter: PlaylistFilter;
-      } | null>;
+      formMolecule: FormMolecule;
     };
 
 const baseAtom = atom<AppState>({
@@ -25,6 +18,6 @@ export const appAtom = atom((get) => get(baseAtom));
 export const selectPlaylistAtom = atom(null, (get, set, playlistId: string) => {
   set(baseAtom, {
     selectedPlaylistId: playlistId,
-    ...makeFormAtoms(),
+    formMolecule: FormMolecule(),
   });
 });

@@ -61,10 +61,7 @@ export default function Home(): ReactElement {
           <PlaylistDetails playlistId={state.selectedPlaylistId} />
           <FilterForm
             playlistId={state.selectedPlaylistId}
-            formAtom={state.formAtom}
-            initializeFormAtom={state.initializeFormAtom}
-            finishEditingAtom={state.finishEditingAtom}
-            exportVariablesAtom={state.exportVariablesAtom}
+            formMolecule={state.formMolecule}
           />
           <Tracks playlistId={state.selectedPlaylistId} />
         </div>

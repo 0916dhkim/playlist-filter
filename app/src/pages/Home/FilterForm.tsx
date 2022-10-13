@@ -5,9 +5,9 @@ import {
 } from "../../api/types";
 import { Atom, WritableAtom, useAtomValue, useSetAtom } from "jotai";
 import { FormEventHandler, ReactElement, useCallback } from "react";
+import { FormMolecule, FormState } from "../../state/formState";
 
 import AudioFeatureRangeInput from "./AudioFeatureRangeInput";
-import { FormState } from "../../state/formState";
 import PlaylistNameInput from "./PlaylistNameInput";
 import { getTracks } from "../../api/queries";
 import invariant from "tiny-invariant";
@@ -18,21 +18,17 @@ import { useQuery } from "@tanstack/react-query";
 
 type FilterFormProps = {
   playlistId: string;
-  formAtom: Atom<FormState>;
-  initializeFormAtom: WritableAtom<null, AudioFeatureRanges, void>;
-  finishEditingAtom: WritableAtom<null, unknown, void>;
-  exportVariablesAtom: Atom<{
-    playlistName: string;
-    filter: PlaylistFilter;
-  } | null>;
+  formMolecule: FormMolecule;
 };
 
 export default function FilterForm({
   playlistId,
-  formAtom,
-  initializeFormAtom,
-  finishEditingAtom,
-  exportVariablesAtom,
+  formMolecule: {
+    formAtom,
+    initializeFormAtom,
+    finishEditingAtom,
+    exportVariablesAtom,
+  },
 }: FilterFormProps): ReactElement | null {
   const state = useAtomValue(formAtom);
   const initializeForm = useSetAtom(initializeFormAtom);
@@ -70,10 +66,13 @@ export default function FilterForm({
   if (state.stage === "editing") {
     return (
       <form onSubmit={handleEditingSubmit}>
-        {ALL_AUDIO_FEATURES.map((feature) => state.inputProps[feature])
+        {ALL_AUDIO_FEATURES.map((feature) => state.audioFeatureRanges[feature])
           .filter(isDefined)
-          .map((props) => (
-            <AudioFeatureRangeInput key={props.feature} {...props} />
+          .map((rangeInputMolecule) => (
+            <AudioFeatureRangeInput
+              key={rangeInputMolecule.name}
+              molecule={rangeInputMolecule}
+            />
           ))}
         <button>Next</button>
       </form>

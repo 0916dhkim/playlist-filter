@@ -1,24 +1,19 @@
-import { PrimitiveAtom, useAtom } from "jotai";
-
-import { AudioFeature } from "../../api/types";
+import { RangeInputMolecule } from "../../state/formState";
 import { ReactElement } from "react";
+import { useAtom } from "jotai";
 
 type AudioFeatureRangeInputProps = {
-  feature: AudioFeature;
-  minAtom: PrimitiveAtom<string>;
-  maxAtom: PrimitiveAtom<string>;
+  molecule: RangeInputMolecule;
 };
 
 export default function AudioFeatureRangeInput({
-  feature,
-  minAtom,
-  maxAtom,
+  molecule: { name, minAtom, maxAtom },
 }: AudioFeatureRangeInputProps): ReactElement | null {
   const [min, setMin] = useAtom(minAtom);
   const [max, setMax] = useAtom(maxAtom);
   return (
     <div>
-      <h1>{feature}</h1>
+      <h1>{name}</h1>
       <input value={min} onChange={(e) => setMin(e.target.value)} />
       <input value={max} onChange={(e) => setMax(e.target.value)} />
     </div>

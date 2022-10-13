@@ -4,15 +4,28 @@ import {
   AudioFeatureRanges,
   PlaylistFilter,
 } from "../api/types";
-import { PrimitiveAtom, atom } from "jotai";
+import { Atom, PrimitiveAtom, WritableAtom, atom } from "jotai";
 
-// TODO: Rename to range.
-type InputProps = {
-  [F in AudioFeature]?: {
-    feature: AudioFeature;
-    minAtom: PrimitiveAtom<string>;
-    maxAtom: PrimitiveAtom<string>;
+export type RangeInputMolecule = {
+  name: string;
+  minAtom: PrimitiveAtom<string>;
+  maxAtom: PrimitiveAtom<string>;
+};
+
+function RangeInputMolecule(
+  name: string,
+  min: number,
+  max: number
+): RangeInputMolecule {
+  return {
+    name,
+    minAtom: atom(min.toString()),
+    maxAtom: atom(max.toString()),
   };
+}
+
+type AudioFeatureRangesMolecule = {
+  [F in AudioFeature]?: RangeInputMolecule;
 };
 
 export type FormState =
@@ -21,30 +34,40 @@ export type FormState =
     }
   | {
       stage: "editing";
-      inputProps: InputProps;
+      audioFeatureRanges: AudioFeatureRangesMolecule;
     }
   | {
       stage: "exporting";
-      inputProps: InputProps;
+      audioFeatureRanges: AudioFeatureRangesMolecule;
       playlistName: PrimitiveAtom<string>;
     };
 
-function initialInputProps(audioFeatureRanges: AudioFeatureRanges) {
-  const inputProps: InputProps = {};
+function AudioFeatureRangesMolecule(audioFeatureRanges: AudioFeatureRanges) {
+  const audioFeatureRangesMolecule: AudioFeatureRangesMolecule = {};
   for (const feature of ALL_AUDIO_FEATURES) {
     const range = audioFeatureRanges[feature];
     if (range) {
-      inputProps[feature] = {
+      audioFeatureRangesMolecule[feature] = RangeInputMolecule(
         feature,
-        minAtom: atom(range.min.toString()),
-        maxAtom: atom(range.max.toString()),
-      };
+        range.min,
+        range.max
+      );
     }
   }
-  return inputProps;
+  return audioFeatureRangesMolecule;
 }
 
-export function makeFormAtoms() {
+export type FormMolecule = {
+  formAtom: Atom<FormState>;
+  initializeFormAtom: WritableAtom<null, AudioFeatureRanges, void>;
+  finishEditingAtom: WritableAtom<null, unknown, void>;
+  exportVariablesAtom: Atom<{
+    playlistName: string;
+    filter: PlaylistFilter;
+  } | null>;
+};
+
+export function FormMolecule() {
   const baseAtom = atom<FormState>({ stage: "uninitialized" });
   return {
     formAtom: atom((get) => get(baseAtom)),
@@ -55,7 +78,7 @@ export function makeFormAtoms() {
         if (prev.stage === "uninitialized") {
           set(baseAtom, {
             stage: "editing",
-            inputProps: initialInputProps(audioFeatureRanges),
+            audioFeatureRanges: AudioFeatureRangesMolecule(audioFeatureRanges),
           });
         }
       }
@@ -65,7 +88,7 @@ export function makeFormAtoms() {
       if (prev.stage === "editing") {
         set(baseAtom, {
           stage: "exporting",
-          inputProps: prev.inputProps,
+          audioFeatureRanges: prev.audioFeatureRanges,
           playlistName: atom(""),
         });
       }
@@ -75,11 +98,11 @@ export function makeFormAtoms() {
       if (formState.stage !== "exporting") return null;
       const filter: PlaylistFilter = {};
       for (const feature of ALL_AUDIO_FEATURES) {
-        const inputState = formState.inputProps[feature];
-        if (inputState) {
+        const rangeInputMolecule = formState.audioFeatureRanges[feature];
+        if (rangeInputMolecule) {
           filter[feature] = {
-            min: Number(get(inputState.minAtom)),
-            max: Number(get(inputState.maxAtom)),
+            min: Number(get(rangeInputMolecule.minAtom)),
+            max: Number(get(rangeInputMolecule.maxAtom)),
           };
         }
       }
