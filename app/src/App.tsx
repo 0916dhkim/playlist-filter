@@ -1,12 +1,11 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import Home from "./pages/Home";
 import OAuthCallback from "./pages/OAuthCallback";
+import { QueryClientProvider } from "@tanstack/react-query";
 import Register from "./pages/Register";
 import SignIn from "./pages/SignIn";
-
-const queryClient = new QueryClient();
+import { queryClient } from "./queryClient";
 
 function App() {
   return (
