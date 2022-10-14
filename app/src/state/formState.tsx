@@ -1,49 +1,7 @@
-import {
-  ALL_AUDIO_FEATURES,
-  AudioFeature,
-  AudioFeatureRanges,
-} from "../api/types";
+import { ALL_AUDIO_FEATURES, AudioFeatureRanges } from "../api/types";
 import { Atom, PrimitiveAtom, WritableAtom, atom } from "jotai";
 
-export type RangeInputMolecule = {
-  name: string;
-  minAtom: PrimitiveAtom<string>;
-  maxAtom: PrimitiveAtom<string>;
-  errorAtom: Atom<string | undefined>;
-};
-
-function RangeInputMolecule(
-  name: string,
-  min: number,
-  max: number
-): RangeInputMolecule {
-  const minAtom = atom(min.toString());
-  const maxAtom = atom(max.toString());
-  const errorAtom = atom((get) => {
-    const parsedMin = Number(get(minAtom));
-    if (isNaN(parsedMin)) {
-      return "Invalid lower bound.";
-    }
-    const parsedMax = Number(get(maxAtom));
-    if (isNaN(parsedMax)) {
-      return "Invalid upper bound.";
-    }
-    if (parsedMin > parsedMax) {
-      return "min should not be greater than max.";
-    }
-    return undefined;
-  });
-  return {
-    name,
-    minAtom,
-    maxAtom,
-    errorAtom,
-  };
-}
-
-type AudioFeatureRangesMolecule = {
-  [F in AudioFeature]?: RangeInputMolecule;
-};
+import { AudioFeatureRangesMolecule } from "./audioFeatureRanges";
 
 export type FormState =
   | {
@@ -58,21 +16,6 @@ export type FormState =
       audioFeatureRanges: AudioFeatureRangesMolecule;
       playlistName: PrimitiveAtom<string>;
     };
-
-function AudioFeatureRangesMolecule(audioFeatureRanges: AudioFeatureRanges) {
-  const audioFeatureRangesMolecule: AudioFeatureRangesMolecule = {};
-  for (const feature of ALL_AUDIO_FEATURES) {
-    const range = audioFeatureRanges[feature];
-    if (range) {
-      audioFeatureRangesMolecule[feature] = RangeInputMolecule(
-        feature,
-        range.min,
-        range.max
-      );
-    }
-  }
-  return audioFeatureRangesMolecule;
-}
 
 export type FormMolecule = {
   formAtom: Atom<FormState>;
