@@ -1,6 +1,7 @@
 import {
   audioFeatureRangesSchema,
   calculateAudioFeatureRanges,
+  filterByAudioFeatureRanges,
 } from "./models";
 
 import { FirebaseService } from "./services/firebase";
@@ -9,6 +10,7 @@ import cors from "cors";
 import env from "./env";
 import express from "express";
 import morgan from "morgan";
+import { parseUrlQuery } from "./lib/schema";
 import { toPromise } from "./lib/observable";
 import { validateFirebaseIdToken } from "./middleware";
 import z from "zod";
@@ -81,10 +83,16 @@ app.get("/playlists/:id", async (req, res, next) => {
 app.get("/playlists/:id/tracks", async (req, res, next) => {
   try {
     const tracks = await toPromise(
-      spotifyService.getTracks(
-        spotifyService.getValidToken(req.uid),
-        req.params.id
-      )
+      spotifyService
+        .getTracks(spotifyService.getValidToken(req.uid), req.params.id)
+        .pipe(
+          filterByAudioFeatureRanges(
+            parseUrlQuery(
+              req.query.audioFeatureRanges,
+              audioFeatureRangesSchema.nullish()
+            ) ?? {}
+          )
+        )
     );
     const audioFeatureRanges = calculateAudioFeatureRanges(tracks);
     return res.json({

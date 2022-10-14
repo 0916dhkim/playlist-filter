@@ -1,15 +1,14 @@
 import {
-  ALL_AUDIO_FEATURES,
   AudioFeatureRanges,
   Playlist,
   Track,
+  filterByAudioFeatureRanges,
 } from "../../models";
 import {
   Observable,
   bufferCount,
   combineLatestWith,
   concatMap,
-  filter,
   from,
   identity,
   map,
@@ -57,26 +56,6 @@ function assembleTracks(
       valence: audioFeature.valence,
     }))
   );
-}
-
-function trackPredicate(
-  track: Track,
-  audioFeatureRanges: AudioFeatureRanges
-): boolean {
-  for (const feature of ALL_AUDIO_FEATURES) {
-    const targetRange = audioFeatureRanges[feature];
-    const featureValue = track[feature];
-    if (targetRange == null) {
-      continue;
-    }
-    if (featureValue == null) {
-      return false;
-    }
-    if (featureValue < targetRange.min || featureValue > targetRange.max) {
-      return false;
-    }
-  }
-  return true;
 }
 
 export const SpotifyService = (firebaseService: FirebaseService) => {
@@ -208,7 +187,7 @@ export const SpotifyService = (firebaseService: FirebaseService) => {
   ): Promise<string> {
     const trackUris$ = toPromise(
       getTracks(accessToken$, originalPlaylistId).pipe(
-        filter((track) => trackPredicate(track, audioFeatureRanges)),
+        filterByAudioFeatureRanges(audioFeatureRanges),
         map((track) => track.id)
       )
     );

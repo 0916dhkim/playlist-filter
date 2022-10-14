@@ -1,3 +1,5 @@
+import { Observable, filter } from "rxjs";
+
 import { stringLiteralUnion } from "./lib/schema";
 import { z } from "zod";
 
@@ -88,3 +90,29 @@ export function calculateAudioFeatureRanges(
   }
   return ret;
 }
+
+export const filterByAudioFeatureRanges =
+  (audioFeatureRanges: AudioFeatureRanges) =>
+  (track$: Observable<Track>): Observable<Track> => {
+    return track$.pipe(
+      filter((track) => {
+        for (const feature of ALL_AUDIO_FEATURES) {
+          const targetRange = audioFeatureRanges[feature];
+          const featureValue = track[feature];
+          if (targetRange == null) {
+            continue;
+          }
+          if (featureValue == null) {
+            return false;
+          }
+          if (
+            featureValue < targetRange.min ||
+            featureValue > targetRange.max
+          ) {
+            return false;
+          }
+        }
+        return true;
+      })
+    );
+  };
