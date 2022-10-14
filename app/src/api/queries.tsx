@@ -1,26 +1,34 @@
 import { AudioFeatureRanges, Playlist, PlaylistDetails, Track } from "./types";
 
+import { QueryFunctionContext } from "@tanstack/react-query";
+import { Tail } from "../typeHelpers";
 import { getIdToken } from "../firebase";
 import z from "zod";
 
-type AnyAsyncFunction = (...args: any[]) => Promise<any>;
-type Query<TKey, TFunction extends AnyAsyncFunction> = [
-  [TKey, ...Parameters<TFunction>],
-  () => ReturnType<TFunction>
+type AnyQueryFunction = (
+  ctx: QueryFunctionContext,
+  ...args: any[]
+) => Promise<any>;
+type Query<TKey, TFunction extends AnyQueryFunction> = [
+  [TKey, ...Tail<Parameters<TFunction>>],
+  (ctx: QueryFunctionContext) => ReturnType<TFunction>
 ];
 
 const Query =
-  <TKey, TFunction extends AnyAsyncFunction>(key: TKey, fn: TFunction) =>
-  (...args: Parameters<TFunction>): Query<TKey, TFunction> =>
-    [[key, ...args], () => fn(...args) as ReturnType<TFunction>];
+  <TKey, TFunction extends AnyQueryFunction>(key: TKey, fn: TFunction) =>
+  (...args: Tail<Parameters<TFunction>>): Query<TKey, TFunction> =>
+    [
+      [key, ...args],
+      (ctx: QueryFunctionContext) => fn(ctx, ...args) as ReturnType<TFunction>,
+    ];
 
-export const queryKey = <TKey, TFunction extends AnyAsyncFunction>(
+export const queryKey = <TKey, TFunction extends AnyQueryFunction>(
   query: Query<TKey, TFunction>
 ) => query[0];
 
 export const getPlaylists = Query(
   "playlists",
-  async (): Promise<Playlist[]> => {
+  async ({ signal }): Promise<Playlist[]> => {
     const idToken = await getIdToken();
     const response = await fetch(
       `${import.meta.env.VITE_BACKEND_BASE_URL}/api/playlists`,
@@ -28,6 +36,7 @@ export const getPlaylists = Query(
         headers: {
           Authorization: `Bearer ${idToken}`,
         },
+        signal,
       }
     );
 
@@ -48,7 +57,7 @@ export const getPlaylists = Query(
 
 export const getPlaylistDetails = Query(
   "playlist",
-  async (playlistId: string): Promise<PlaylistDetails> => {
+  async ({ signal }, playlistId: string): Promise<PlaylistDetails> => {
     const idToken = await getIdToken();
 
     const response = await fetch(
@@ -57,6 +66,7 @@ export const getPlaylistDetails = Query(
         headers: {
           Authorization: `Bearer ${idToken}`,
         },
+        signal,
       }
     );
 
@@ -82,6 +92,7 @@ export const getPlaylistDetails = Query(
 export const getTracks = Query(
   "tracks",
   async (
+    { signal },
     playlistId: string,
     audioFeatureRanges?: AudioFeatureRanges
   ): Promise<{
@@ -104,6 +115,7 @@ export const getTracks = Query(
       headers: {
         Authorization: `Bearer ${idToken}`,
       },
+      signal,
     });
 
     const parsed = z
