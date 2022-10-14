@@ -82,23 +82,29 @@ export const getPlaylistDetails = Query(
 export const getTracks = Query(
   "tracks",
   async (
-    playlistId: string
+    playlistId: string,
+    audioFeatureRanges?: AudioFeatureRanges
   ): Promise<{
     tracks: Track[];
     audioFeatureRanges: AudioFeatureRanges;
   }> => {
     const idToken = await getIdToken();
 
-    const response = await fetch(
+    const params = new URLSearchParams();
+    if (audioFeatureRanges) {
+      params.append("audioFeatureRanges", JSON.stringify(audioFeatureRanges));
+    }
+    const url = new URL(
       `${
         import.meta.env.VITE_BACKEND_BASE_URL
-      }/api/playlists/${playlistId}/tracks`,
-      {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-      }
+      }/api/playlists/${playlistId}/tracks`
     );
+    url.search = params.toString();
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+      },
+    });
 
     const parsed = z
       .object({
