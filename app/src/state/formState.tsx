@@ -1,7 +1,10 @@
 import { ALL_AUDIO_FEATURES, AudioFeatureRanges } from "../api/types";
 import { Atom, PrimitiveAtom, WritableAtom, atom } from "jotai";
+import { getPlaylists, queryKey } from "../api/queries";
 
 import { AudioFeatureRangesMolecule } from "./audioFeatureRanges";
+import { exportPlaylist } from "../api/mutations";
+import { queryClient } from "../queryClient";
 
 export type FormState =
   | {
@@ -22,10 +25,7 @@ export type FormMolecule = {
   initializeFormAtom: WritableAtom<null, AudioFeatureRanges, void>;
   canFinishEditingAtom: Atom<boolean>;
   finishEditingAtom: WritableAtom<null, unknown, void>;
-  exportVariablesAtom: Atom<{
-    playlistName: string;
-    audioFeatureRanges: AudioFeatureRanges;
-  } | null>;
+  exportPlaylistAtom: WritableAtom<null, string, void>;
 };
 
 export function FormMolecule() {
@@ -69,9 +69,12 @@ export function FormMolecule() {
         });
       }
     }),
-    exportVariablesAtom: atom((get) => {
+    exportPlaylistAtom: atom(null, async (get, set, playlistId: string) => {
       const formState = get(baseAtom);
-      if (formState.stage !== "exporting") return null;
+      if (formState.stage !== "exporting") {
+        return;
+      }
+      const playlistName = get(formState.playlistName);
       const audioFeatureRanges: AudioFeatureRanges = {};
       for (const feature of ALL_AUDIO_FEATURES) {
         const rangeInputMolecule = formState.audioFeatureRanges[feature];
@@ -82,10 +85,12 @@ export function FormMolecule() {
           };
         }
       }
-      return {
-        playlistName: get(formState.playlistName),
+      await exportPlaylist({
+        sourcePlaylistId: playlistId,
+        playlistName,
         audioFeatureRanges,
-      };
+      });
+      queryClient.invalidateQueries(queryKey(getPlaylists()));
     }),
   };
 }

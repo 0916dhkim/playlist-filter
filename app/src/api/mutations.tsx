@@ -1,11 +1,8 @@
-import { getPlaylists, queryKey } from "./queries";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
 import { AudioFeatureRanges } from "./types";
 import { getIdToken } from "../firebase";
 import { z } from "zod";
 
-async function exportPlaylist(variables: {
+export async function exportPlaylist(variables: {
   sourcePlaylistId: string;
   playlistName: string;
   audioFeatureRanges: AudioFeatureRanges;
@@ -35,14 +32,4 @@ async function exportPlaylist(variables: {
     .parse(await response.json());
 
   return parsed.playlistId;
-}
-
-export function useExportPlaylistMutation() {
-  const queryClient = useQueryClient();
-  const mutation = useMutation(exportPlaylist, {
-    onSettled: () => {
-      queryClient.invalidateQueries(queryKey(getPlaylists()));
-    },
-  });
-  return mutation;
 }

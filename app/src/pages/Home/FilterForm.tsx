@@ -1,14 +1,11 @@
-import { FormEventHandler, ReactElement, useCallback } from "react";
+import { FormEventHandler, ReactElement } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 
 import { ALL_AUDIO_FEATURES } from "../../api/types";
 import AudioFeatureRangeInput from "./AudioFeatureRangeInput";
 import { FormMolecule } from "../../state/formState";
 import PlaylistNameInput from "./PlaylistNameInput";
-import invariant from "tiny-invariant";
 import { isDefined } from "../../typeHelpers";
-import { useAtomCallback } from "jotai/utils";
-import { useExportPlaylistMutation } from "../../api/mutations";
 
 type FilterFormProps = {
   playlistId: string;
@@ -21,26 +18,13 @@ export default function FilterForm({
     formAtom,
     canFinishEditingAtom,
     finishEditingAtom,
-    exportVariablesAtom,
+    exportPlaylistAtom,
   },
 }: FilterFormProps): ReactElement | null {
   const state = useAtomValue(formAtom);
   const canFinishEditing = useAtomValue(canFinishEditingAtom);
   const finishEditing = useSetAtom(finishEditingAtom);
-  const exportMutation = useExportPlaylistMutation();
-  const exportPlaylist = useAtomCallback(
-    useCallback(
-      (get, set) => {
-        const exportVariables = get(exportVariablesAtom);
-        invariant(exportVariables);
-        exportMutation.mutate({
-          sourcePlaylistId: playlistId,
-          ...exportVariables,
-        });
-      },
-      [playlistId, exportMutation]
-    )
-  );
+  const exportPlaylist = useSetAtom(exportPlaylistAtom);
 
   const handleEditingSubmit: FormEventHandler = (e) => {
     e.preventDefault();
@@ -49,7 +33,7 @@ export default function FilterForm({
 
   const handleExportSubmit: FormEventHandler = (e) => {
     e.preventDefault();
-    exportPlaylist();
+    exportPlaylist(playlistId);
   };
 
   if (state.stage === "editing") {
