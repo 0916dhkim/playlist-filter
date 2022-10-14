@@ -1,12 +1,11 @@
-import { ReactElement, useEffect, useState } from "react";
+import { ReactElement, useEffect } from "react";
 import { appAtom, selectPlaylistAtom } from "../../state/app";
 import { useAtomValue, useSetAtom } from "jotai";
 
 import ConnectSpotifyButton from "../../components/ConnectSpotifyButton";
-import FilterForm from "./FilterForm";
+import EditorForm from "./EditorForm";
 import PlaylistDetails from "./PlaylistDetails";
 import Playlists from "./Playlists";
-import Tracks from "./Tracks";
 import { sprinkles } from "../../sprinkles.css";
 import { twoColumns } from "./index.css";
 import { useFirebaseAuthState } from "../../firebase";
@@ -59,11 +58,10 @@ export default function Home(): ReactElement {
           })}
         >
           <PlaylistDetails playlistId={state.selectedPlaylistId} />
-          <FilterForm
+          <EditorForm
             playlistId={state.selectedPlaylistId}
             formMolecule={state.formMolecule}
           />
-          <Tracks playlistId={state.selectedPlaylistId} />
         </div>
       ) : null}
     </div>

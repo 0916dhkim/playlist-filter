@@ -1,6 +1,6 @@
 import { useAtom, useAtomValue } from "jotai";
 
-import { RangeInputMolecule } from "../../state/rangeInput";
+import { RangeInputMolecule } from "../../../state/rangeInput";
 import { ReactElement } from "react";
 
 type AudioFeatureRangeInputProps = {
