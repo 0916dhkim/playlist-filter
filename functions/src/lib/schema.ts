@@ -19,5 +19,5 @@ export function parseUrlQuery<T>(
   if (typeof query !== "string" && query !== undefined) {
     throw new Error("Cannot parse a non-string query.");
   }
-  return schema.parse(query ? Buffer.from(query).toString("utf8") : undefined);
+  return schema.parse(query ? decodeURIComponent(query) : undefined);
 }
