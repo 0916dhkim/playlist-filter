@@ -2,7 +2,6 @@ import {
   ALL_AUDIO_FEATURES,
   AudioFeature,
   AudioFeatureRanges,
-  PlaylistFilter,
 } from "../api/types";
 import { Atom, PrimitiveAtom, WritableAtom, atom } from "jotai";
 
@@ -82,7 +81,7 @@ export type FormMolecule = {
   finishEditingAtom: WritableAtom<null, unknown, void>;
   exportVariablesAtom: Atom<{
     playlistName: string;
-    filter: PlaylistFilter;
+    audioFeatureRanges: AudioFeatureRanges;
   } | null>;
 };
 
@@ -130,11 +129,11 @@ export function FormMolecule() {
     exportVariablesAtom: atom((get) => {
       const formState = get(baseAtom);
       if (formState.stage !== "exporting") return null;
-      const filter: PlaylistFilter = {};
+      const audioFeatureRanges: AudioFeatureRanges = {};
       for (const feature of ALL_AUDIO_FEATURES) {
         const rangeInputMolecule = formState.audioFeatureRanges[feature];
         if (rangeInputMolecule) {
-          filter[feature] = {
+          audioFeatureRanges[feature] = {
             min: Number(get(rangeInputMolecule.minAtom)),
             max: Number(get(rangeInputMolecule.maxAtom)),
           };
@@ -142,7 +141,7 @@ export function FormMolecule() {
       }
       return {
         playlistName: get(formState.playlistName),
-        filter,
+        audioFeatureRanges,
       };
     }),
   };

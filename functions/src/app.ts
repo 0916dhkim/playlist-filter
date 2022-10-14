@@ -98,17 +98,17 @@ app.get("/playlists/:id/tracks", async (req, res, next) => {
 
 app.post("/playlists/:id/export", async (req, res, next) => {
   try {
-    const { playlistName, filter } = z
+    const { playlistName, audioFeatureRanges } = z
       .object({
         playlistName: z.string(),
-        filter: audioFeatureRangesSchema,
+        audioFeatureRanges: audioFeatureRangesSchema,
       })
       .parse(req.body);
     const playlistId = await spotifyService.exportPlaylist(
       spotifyService.getValidToken(req.uid),
       req.params.id,
       playlistName,
-      filter
+      audioFeatureRanges
     );
     return res.json({
       playlistId,

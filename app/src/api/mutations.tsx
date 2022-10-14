@@ -1,14 +1,14 @@
 import { getPlaylists, queryKey } from "./queries";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { PlaylistFilter } from "./types";
+import { AudioFeatureRanges } from "./types";
 import { getIdToken } from "../firebase";
 import { z } from "zod";
 
 async function exportPlaylist(variables: {
   sourcePlaylistId: string;
   playlistName: string;
-  filter: PlaylistFilter;
+  audioFeatureRanges: AudioFeatureRanges;
 }): Promise<string> {
   const idToken = await getIdToken();
   const response = await fetch(
@@ -23,7 +23,7 @@ async function exportPlaylist(variables: {
       },
       body: JSON.stringify({
         playlistName: variables.playlistName,
-        filter: variables.filter,
+        audioFeatureRanges: variables.audioFeatureRanges,
       }),
     }
   );
