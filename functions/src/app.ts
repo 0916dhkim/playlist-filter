@@ -10,7 +10,7 @@ import cors from "cors";
 import env from "./env";
 import express from "express";
 import morgan from "morgan";
-import { parseUrlQuery } from "./lib/schema";
+import { parseJsonQuery } from "./lib/schema";
 import { toPromise } from "./lib/observable";
 import { validateFirebaseIdToken } from "./middleware";
 import z from "zod";
@@ -87,7 +87,7 @@ app.get("/playlists/:id/tracks", async (req, res, next) => {
         .getTracks(spotifyService.getValidToken(req.uid), req.params.id)
         .pipe(
           filterByAudioFeatureRanges(
-            parseUrlQuery(
+            parseJsonQuery(
               req.query.audioFeatureRanges,
               audioFeatureRangesSchema.nullish()
             ) ?? {}
