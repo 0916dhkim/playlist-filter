@@ -10,7 +10,9 @@
 1. Clone this repository.
 1. Create a Firebase project.
 1. Add a web app to the Firebase project.
+1. Enable "Email/Password" & "Anonymous" sign-in method on Firebase dashboard.
 1. Create a Spotify app.
+1. Add "http://localhost:5173/callback" to redirect URIs on Spotify developer dashboard.
 
 ### Server
 
