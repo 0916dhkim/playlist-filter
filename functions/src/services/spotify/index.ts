@@ -188,7 +188,7 @@ export const SpotifyService = (firebaseService: FirebaseService) => {
     const trackUris$ = toPromise(
       getTracks(accessToken$, originalPlaylistId).pipe(
         filterByAudioFeatureRanges(audioFeatureRanges),
-        map((track) => track.id)
+        map((track) => track.uri)
       )
     );
 
