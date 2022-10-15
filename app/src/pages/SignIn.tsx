@@ -1,6 +1,6 @@
 import { FormEvent, ReactElement, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { signIn, useFirebaseAuthState } from "../firebase";
+import { guestSignIn, signIn, useFirebaseAuthState } from "../firebase";
 
 export default function SignIn(): ReactElement {
   const hasAuth = useFirebaseAuthState();
@@ -42,6 +42,7 @@ export default function SignIn(): ReactElement {
       <p>
         Not a user yet? <Link to="/register">Register</Link>
       </p>
+      <button onClick={() => guestSignIn()}>Guest Login</button>
     </form>
   );
 }
