@@ -15,7 +15,7 @@ export default function SignIn(): ReactElement {
 
   useEffect(() => {
     if (hasAuth) {
-      navigate("/");
+      navigate("/unconnected");
     }
   }, [hasAuth]);
 

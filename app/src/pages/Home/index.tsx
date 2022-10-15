@@ -2,7 +2,6 @@ import { ReactElement, useEffect } from "react";
 import { appAtom, selectPlaylistAtom } from "../../state/app";
 import { useAtomValue, useSetAtom } from "jotai";
 
-import ConnectSpotifyButton from "../../components/ConnectSpotifyButton";
 import EditorForm from "./EditorForm";
 import PlaylistDetails from "./PlaylistDetails";
 import Playlists from "./Playlists";
@@ -11,6 +10,12 @@ import { twoColumns } from "./index.css";
 import { useFirebaseAuthState } from "../../firebase";
 import { useNavigate } from "react-router-dom";
 
+/**
+ * The main playlist editing page.
+ *
+ * The user must be authenticated & has their Spotify account connected
+ * before reaching this page.
+ */
 export default function Home(): ReactElement {
   const hasAuth = useFirebaseAuthState();
   const navigate = useNavigate();
@@ -37,7 +42,6 @@ export default function Home(): ReactElement {
           },
         })}
       >
-        <ConnectSpotifyButton />
         <h4
           className={sprinkles({
             fontWeight: "bold",
