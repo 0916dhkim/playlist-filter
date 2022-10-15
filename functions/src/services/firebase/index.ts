@@ -6,6 +6,7 @@ import {
   spotifyAuthCollection,
 } from "./collections";
 
+import { Profile } from "../../models";
 import admin from "firebase-admin";
 import env from "../../env";
 import { getFirestore } from "firebase-admin/firestore";
@@ -82,6 +83,14 @@ export const FirebaseService = () => {
         expiresAt: env.CACHE_LIFESPAN + Math.floor(new Date().getTime() / 1000),
         audioFeatures: data,
       }),
+
+    getProfile: async (uid: string): Promise<Profile> => {
+      const authDoc = await getDoc(spotifyAuthCollection, uid);
+      return {
+        id: uid,
+        isConnectedToSpotify: authDoc != null,
+      };
+    },
   };
 };
 

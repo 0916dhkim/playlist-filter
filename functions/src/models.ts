@@ -3,6 +3,11 @@ import { Observable, filter } from "rxjs";
 import { stringLiteralUnion } from "./lib/schema";
 import { z } from "zod";
 
+export type Profile = {
+  id: string;
+  isConnectedToSpotify: boolean;
+};
+
 export type Playlist = {
   id: string;
   name: string;

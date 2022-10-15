@@ -1,4 +1,10 @@
-import { AudioFeatureRanges, Playlist, PlaylistDetails, Track } from "./types";
+import {
+  AudioFeatureRanges,
+  Playlist,
+  PlaylistDetails,
+  Profile,
+  Track,
+} from "./types";
 
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { Tail } from "../typeHelpers";
@@ -25,6 +31,33 @@ const Query =
 export const queryKey = <TKey, TFunction extends AnyQueryFunction>(
   query: Query<TKey, TFunction>
 ) => query[0];
+
+export const getProfile = Query(
+  "profile",
+  async ({ signal }): Promise<Profile> => {
+    const idToken = await getIdToken();
+    const response = await fetch(
+      `${import.meta.env.VITE_BACKEND_BASE_URL}/api/profile`,
+      {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+        signal,
+      }
+    );
+
+    const parsed = z
+      .object({
+        profile: z.object({
+          id: z.string(),
+          isConnectedToSpotify: z.boolean(),
+        }),
+      })
+      .parse(await response.json());
+
+    return parsed.profile;
+  }
+);
 
 export const getPlaylists = Query(
   "playlists",

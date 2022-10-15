@@ -1,3 +1,8 @@
+export type Profile = {
+  id: string;
+  isConnectedToSpotify: boolean;
+};
+
 export type Playlist = {
   id: string;
   name: string;

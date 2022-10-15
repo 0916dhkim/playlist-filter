@@ -24,6 +24,18 @@ app.use(morgan("short"));
 app.use(cors());
 app.use(validateFirebaseIdToken);
 
+app.get("/profile", async (req, res, next) => {
+  try {
+    const profile = await firebaseService.getProfile(req.uid);
+
+    return res.json({
+      profile,
+    });
+  } catch (err) {
+    return next(err);
+  }
+});
+
 app.get("/spotify-login-url", (req, res) => {
   const loginUrl =
     "https://accounts.spotify.com/authorize?" +
