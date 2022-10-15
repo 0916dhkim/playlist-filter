@@ -43,7 +43,7 @@ app.get("/spotify-login-url", (req, res) => {
       client_id: env.SPOTIFY_CLIENT_ID,
       response_type: "code",
       redirect_uri: `${env.APP_BASE_URL}/callback`,
-      scope: "playlist-read-private",
+      scope: "playlist-read-private playlist-modify-private",
     }).toString();
 
   return res.json({
