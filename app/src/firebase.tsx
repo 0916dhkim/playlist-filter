@@ -1,11 +1,18 @@
 import {
+  ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import {
   User,
   createUserWithEmailAndPassword,
   getAuth,
   onAuthStateChanged as onAuthStateChangedOriginal,
+  signInAnonymously,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import { useEffect, useState } from "react";
 
 import { initializeApp } from "firebase/app";
 import invariant from "tiny-invariant";
@@ -29,6 +36,10 @@ export const registerUser = async (email: string, password: string) => {
 
 export const signIn = async (email: string, password: string) => {
   return signInWithEmailAndPassword(auth, email, password);
+};
+
+export const guestSignIn = async () => {
+  return signInAnonymously(auth);
 };
 
 export const getSpotifyLoginUrl = async () => {
@@ -73,7 +84,13 @@ export const getIdToken = async () => {
   return token;
 };
 
-export const useFirebaseAuthState = () => {
+const FirebaseAuthStateContext = createContext<User | null>(null);
+type FirebaseAuthStateProviderProps = {
+  children: ReactNode;
+};
+export function FirebaseAuthStateProvider({
+  children,
+}: FirebaseAuthStateProviderProps) {
   const [user, setUser] = useState<User | null>(initialUser);
 
   useEffect(() => {
@@ -84,6 +101,15 @@ export const useFirebaseAuthState = () => {
     return unsubscribe;
   }, []);
 
+  return (
+    <FirebaseAuthStateContext.Provider value={user}>
+      {children}
+    </FirebaseAuthStateContext.Provider>
+  );
+}
+
+export const useFirebaseAuthState = () => {
+  const user = useContext(FirebaseAuthStateContext);
   return !!user;
 };
 
