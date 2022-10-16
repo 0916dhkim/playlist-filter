@@ -42,7 +42,9 @@ export default function SignIn(): ReactElement {
       <p>
         Not a user yet? <Link to="/register">Register</Link>
       </p>
-      <button onClick={() => guestSignIn()}>Guest Login</button>
+      <button type="button" onClick={() => guestSignIn()}>
+        Guest Login
+      </button>
     </form>
   );
 }
