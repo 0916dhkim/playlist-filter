@@ -7,10 +7,10 @@ import {
 import { FirebaseService } from "./services/firebase";
 import { SpotifyService } from "./services/spotify";
 import cors from "cors";
-import env from "./env";
 import express from "express";
 import morgan from "morgan";
 import { parseJsonQuery } from "./lib/schema";
+import secrets from "./secrets";
 import { toPromise } from "./lib/observable";
 import { validateFirebaseIdToken } from "./middleware";
 import z from "zod";
@@ -40,9 +40,9 @@ app.get("/spotify-login-url", (req, res) => {
   const loginUrl =
     "https://accounts.spotify.com/authorize?" +
     new URLSearchParams({
-      client_id: env.SPOTIFY_CLIENT_ID,
+      client_id: secrets.SPOTIFY_CLIENT_ID,
       response_type: "code",
-      redirect_uri: `${env.APP_BASE_URL}/callback`,
+      redirect_uri: `${secrets.APP_BASE_URL}/callback`,
       scope: "playlist-read-private playlist-modify-private",
     }).toString();
 

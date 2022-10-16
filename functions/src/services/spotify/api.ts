@@ -1,6 +1,6 @@
 import { Request, buildRequest } from "../../lib/request";
 
-import env from "../../env";
+import secrets from "../../secrets";
 import { z } from "zod";
 
 export type SpotifyApiRequest<TVariables, TResponse> = {
@@ -32,14 +32,14 @@ export const tokenRequest = buildRequest({
   url: () => "https://accounts.spotify.com/api/token",
   headers: () => ({
     Authorization: `Basic ${Buffer.from(
-      `${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`
+      `${secrets.SPOTIFY_CLIENT_ID}:${secrets.SPOTIFY_CLIENT_SECRET}`
     ).toString("base64")}`,
   }),
   body: ({ code }: TokenRequestInput) => {
     const form = new URLSearchParams();
     form.append("grant_type", "authorization_code");
     form.append("code", code);
-    form.append("redirect_uri", `${env.APP_BASE_URL}/callback`);
+    form.append("redirect_uri", `${secrets.APP_BASE_URL}/callback`);
     return form;
   },
   responseParser: (response) => {
@@ -65,7 +65,7 @@ export const tokenRefreshRequest = buildRequest({
   url: () => "https://accounts.spotify.com/api/token",
   headers: () => ({
     Authorization: `Basic ${Buffer.from(
-      `${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`
+      `${secrets.SPOTIFY_CLIENT_ID}:${secrets.SPOTIFY_CLIENT_SECRET}`
     ).toString("base64")}`,
   }),
   body: ({ refreshToken }: TokenRefreshRequestInput) => {

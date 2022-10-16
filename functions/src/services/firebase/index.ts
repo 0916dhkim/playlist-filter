@@ -8,8 +8,8 @@ import {
 
 import { Profile } from "../../models";
 import admin from "firebase-admin";
-import env from "../../env";
 import { getFirestore } from "firebase-admin/firestore";
+import secrets from "../../secrets";
 
 let app: App | null = null;
 
@@ -80,7 +80,8 @@ export const FirebaseService = () => {
       data: DocOf<typeof audioFeaturesCacheCollection>["audioFeatures"]
     ) =>
       createDoc(audioFeaturesCacheCollection, trackId, {
-        expiresAt: env.CACHE_LIFESPAN + Math.floor(new Date().getTime() / 1000),
+        expiresAt:
+          secrets.CACHE_LIFESPAN + Math.floor(new Date().getTime() / 1000),
         audioFeatures: data,
       }),
 
