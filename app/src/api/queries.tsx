@@ -6,6 +6,7 @@ import {
   Track,
 } from "./types";
 
+import { BACKEND_BASE_URL } from "../env";
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { Tail } from "../typeHelpers";
 import { getIdToken } from "../firebase";
@@ -36,15 +37,12 @@ export const getProfile = Query(
   "profile",
   async ({ signal }): Promise<Profile> => {
     const idToken = await getIdToken();
-    const response = await fetch(
-      `${import.meta.env.VITE_BACKEND_BASE_URL}/api/profile`,
-      {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-        signal,
-      }
-    );
+    const response = await fetch(`${BACKEND_BASE_URL}/api/profile`, {
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+      },
+      signal,
+    });
 
     const parsed = z
       .object({
@@ -63,15 +61,12 @@ export const getPlaylists = Query(
   "playlists",
   async ({ signal }): Promise<Playlist[]> => {
     const idToken = await getIdToken();
-    const response = await fetch(
-      `${import.meta.env.VITE_BACKEND_BASE_URL}/api/playlists`,
-      {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-        signal,
-      }
-    );
+    const response = await fetch(`${BACKEND_BASE_URL}/api/playlists`, {
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+      },
+      signal,
+    });
 
     const parsed = z
       .object({
@@ -94,7 +89,7 @@ export const getPlaylistDetails = Query(
     const idToken = await getIdToken();
 
     const response = await fetch(
-      `${import.meta.env.VITE_BACKEND_BASE_URL}/api/playlists/${playlistId}`,
+      `${BACKEND_BASE_URL}/api/playlists/${playlistId}`,
       {
         headers: {
           Authorization: `Bearer ${idToken}`,
@@ -139,9 +134,7 @@ export const getTracks = Query(
       params.append("audioFeatureRanges", JSON.stringify(audioFeatureRanges));
     }
     const url = new URL(
-      `${
-        import.meta.env.VITE_BACKEND_BASE_URL
-      }/api/playlists/${playlistId}/tracks`
+      `${BACKEND_BASE_URL}/api/playlists/${playlistId}/tracks`
     );
     url.search = params.toString();
     const response = await fetch(url, {
