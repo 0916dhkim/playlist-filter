@@ -1,5 +1,6 @@
 import {
   BACKEND_BASE_URL,
+  DEV,
   FIREBASE_API_KEY,
   FIREBASE_APP_ID,
   FIREBASE_AUTH_DOMAIN,
@@ -39,7 +40,9 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-connectAuthEmulator(auth, "http://localhost:9099");
+if (DEV) {
+  connectAuthEmulator(auth, "http://localhost:9099");
+}
 
 export const registerUser = async (email: string, password: string) => {
   return createUserWithEmailAndPassword(auth, email, password);

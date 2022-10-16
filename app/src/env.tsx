@@ -23,3 +23,5 @@ export const FIREBASE_MESSAGING_SENDER_ID =
 export const FIREBASE_APP_ID =
   import.meta.env.VITE_FIREBASE_APP_ID ??
   "1:425167261645:web:e914d9a4c6cf3e61183e84";
+
+export const DEV = import.meta.env.DEV;
