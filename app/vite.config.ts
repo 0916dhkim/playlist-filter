@@ -15,4 +15,9 @@ export default defineConfig({
   test: {
     environment: "jsdom",
   },
+  server: {
+    proxy: {
+      "/api": "http://localhost:5000",
+    },
+  },
 });

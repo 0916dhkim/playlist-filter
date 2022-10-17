@@ -1,5 +1,4 @@
 import { AudioFeatureRanges } from "./types";
-import { BACKEND_BASE_URL } from "../env";
 import { getIdToken } from "../firebase";
 import { z } from "zod";
 
@@ -10,7 +9,7 @@ export async function exportPlaylist(variables: {
 }): Promise<string> {
   const idToken = await getIdToken();
   const response = await fetch(
-    `${BACKEND_BASE_URL}/api/playlists/${variables.sourcePlaylistId}/export`,
+    `/api/playlists/${variables.sourcePlaylistId}/export`,
     {
       method: "POST",
       headers: {

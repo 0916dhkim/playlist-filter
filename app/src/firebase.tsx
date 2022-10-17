@@ -1,5 +1,4 @@
 import {
-  BACKEND_BASE_URL,
   DEV,
   FIREBASE_API_KEY,
   FIREBASE_APP_ID,
@@ -58,7 +57,7 @@ export const guestSignIn = async () => {
 
 export const getSpotifyLoginUrl = async () => {
   const idToken = await getIdToken();
-  const response = await fetch(`${BACKEND_BASE_URL}/api/spotify-login-url`, {
+  const response = await fetch("/api/spotify-login-url", {
     headers: {
       Authorization: `Bearer ${idToken}`,
     },
@@ -74,7 +73,7 @@ export const getSpotifyLoginUrl = async () => {
 
 export const connectSpotify = async (code: string) => {
   const token = await getIdToken();
-  await fetch(`${BACKEND_BASE_URL}/api/connect-spotify`, {
+  await fetch("/api/connect-spotify", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,

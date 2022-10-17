@@ -1,10 +1,15 @@
-const requireSecret = (name: string, fallback?: string): string => {
+const IS_EMULATOR = process.env.FUNCTIONS_EMULATOR === "true";
+
+const requireSecret = (name: string, emulatorValue?: string): string => {
+  if (IS_EMULATOR) {
+    if (emulatorValue != null) {
+      return emulatorValue;
+    }
+  }
+
   const value = process.env[name];
   if (typeof value !== "string") {
-    if (fallback == null) {
-      throw new Error(`Missing secret ${name}`);
-    }
-    return fallback;
+    throw new Error(`Missing secret ${name}`);
   }
   return value;
 };

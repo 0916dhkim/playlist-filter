@@ -1,7 +1,3 @@
-export const BACKEND_BASE_URL =
-  import.meta.env.VITE_BACKEND_BASE_URL ??
-  "http://localhost:5001/spotify-filter-a4435/us-central1";
-
 export const FIREBASE_API_KEY =
   import.meta.env.VITE_FIREBASE_API_KEY ??
   "AIzaSyD3CgLr9T5HqgqsLjjFZC25fNB10FQQECQ";

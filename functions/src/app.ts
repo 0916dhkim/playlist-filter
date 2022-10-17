@@ -3,11 +3,11 @@ import {
   calculateAudioFeatureRanges,
   filterByAudioFeatureRanges,
 } from "./models";
+import express, { Router } from "express";
 
 import { FirebaseService } from "./services/firebase";
 import { SpotifyService } from "./services/spotify";
 import cors from "cors";
-import express from "express";
 import morgan from "morgan";
 import { parseJsonQuery } from "./lib/schema";
 import secrets from "./secrets";
@@ -22,9 +22,12 @@ const app = express();
 
 app.use(morgan("short"));
 app.use(cors());
-app.use(validateFirebaseIdToken);
 
-app.get("/profile", async (req, res, next) => {
+const api = Router();
+app.use("/api", api);
+api.use(validateFirebaseIdToken);
+
+api.get("/profile", async (req, res, next) => {
   try {
     const profile = await firebaseService.getProfile(req.uid);
 
@@ -36,7 +39,7 @@ app.get("/profile", async (req, res, next) => {
   }
 });
 
-app.get("/spotify-login-url", (req, res) => {
+api.get("/spotify-login-url", (req, res) => {
   const loginUrl =
     "https://accounts.spotify.com/authorize?" +
     new URLSearchParams({
@@ -51,7 +54,7 @@ app.get("/spotify-login-url", (req, res) => {
   });
 });
 
-app.post("/connect-spotify", async (req, res, next) => {
+api.post("/connect-spotify", async (req, res, next) => {
   try {
     const { code } = req.body;
     if (typeof code !== "string") {
@@ -66,7 +69,7 @@ app.post("/connect-spotify", async (req, res, next) => {
   }
 });
 
-app.get("/playlists", async (req, res, next) => {
+api.get("/playlists", async (req, res, next) => {
   try {
     const playlists = await toPromise(
       spotifyService.getPlaylists(spotifyService.getValidToken(req.uid))
@@ -80,7 +83,7 @@ app.get("/playlists", async (req, res, next) => {
   }
 });
 
-app.get("/playlists/:id", async (req, res, next) => {
+api.get("/playlists/:id", async (req, res, next) => {
   try {
     const playlist = await spotifyService.getPlaylist(
       spotifyService.getValidToken(req.uid),
@@ -92,7 +95,7 @@ app.get("/playlists/:id", async (req, res, next) => {
   }
 });
 
-app.get("/playlists/:id/tracks", async (req, res, next) => {
+api.get("/playlists/:id/tracks", async (req, res, next) => {
   try {
     const tracks = await toPromise(
       spotifyService
@@ -116,7 +119,7 @@ app.get("/playlists/:id/tracks", async (req, res, next) => {
   }
 });
 
-app.post("/playlists/:id/export", async (req, res, next) => {
+api.post("/playlists/:id/export", async (req, res, next) => {
   try {
     const { playlistName, audioFeatureRanges } = z
       .object({

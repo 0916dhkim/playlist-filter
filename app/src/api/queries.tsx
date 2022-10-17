@@ -6,7 +6,6 @@ import {
   Track,
 } from "./types";
 
-import { BACKEND_BASE_URL } from "../env";
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { Tail } from "../typeHelpers";
 import { getIdToken } from "../firebase";
@@ -37,7 +36,7 @@ export const getProfile = Query(
   "profile",
   async ({ signal }): Promise<Profile> => {
     const idToken = await getIdToken();
-    const response = await fetch(`${BACKEND_BASE_URL}/api/profile`, {
+    const response = await fetch("/api/profile", {
       headers: {
         Authorization: `Bearer ${idToken}`,
       },
@@ -61,7 +60,7 @@ export const getPlaylists = Query(
   "playlists",
   async ({ signal }): Promise<Playlist[]> => {
     const idToken = await getIdToken();
-    const response = await fetch(`${BACKEND_BASE_URL}/api/playlists`, {
+    const response = await fetch("/api/playlists", {
       headers: {
         Authorization: `Bearer ${idToken}`,
       },
@@ -88,15 +87,12 @@ export const getPlaylistDetails = Query(
   async ({ signal }, playlistId: string): Promise<PlaylistDetails> => {
     const idToken = await getIdToken();
 
-    const response = await fetch(
-      `${BACKEND_BASE_URL}/api/playlists/${playlistId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-        signal,
-      }
-    );
+    const response = await fetch(`/api/playlists/${playlistId}`, {
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+      },
+      signal,
+    });
 
     const parsed = z
       .object({
@@ -133,9 +129,8 @@ export const getTracks = Query(
     if (audioFeatureRanges) {
       params.append("audioFeatureRanges", JSON.stringify(audioFeatureRanges));
     }
-    const url = new URL(
-      `${BACKEND_BASE_URL}/api/playlists/${playlistId}/tracks`
-    );
+    const url = new URL(window.location.href);
+    url.pathname = `/api/playlists/${playlistId}/tracks`;
     url.search = params.toString();
     const response = await fetch(url, {
       headers: {
