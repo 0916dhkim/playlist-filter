@@ -3,7 +3,17 @@
   "homepage": "https://0916dhkim.github.io/spotify-filter",
   "version": "0.1.0",
   "private": true,
-  "dependencies": {
-    "firebase": "^9.9.2"
+  "scripts": {
+    "dev": "concurrently \"pnpm app:dev\" \"pnpm app:typecheck:watch\" \"pnpm functions:dev\" \"pnpm functions:typecheck:watch\"",
+    "app:typecheck:watch": "pnpm --filter @spotify-filter/app typecheck:watch",
+    "app:dev": "pnpm --filter @spotify-filter/app dev",
+    "functions:typecheck:watch": "pnpm --filter @spotify-filter/functions typecheck:watch",
+    "functions:dev": "pnpm --filter @spotify-filter/functions dev",
+    "build": "pnpm run --recursive build",
+    "deploy": "pnpm build && firebase deploy"
+  },
+  "devDependencies": {
+    "concurrently": "^7.4.0",
+    "firebase-tools": "^11.14.4"
   }
 }
