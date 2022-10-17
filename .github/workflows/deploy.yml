@@ -22,7 +22,7 @@ jobs:
       - name: Download deps
         run: pnpm install
       - name: Deploy
-        run: pnpm deploy
+        run: pnpm run deploy
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
           BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
