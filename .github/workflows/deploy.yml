@@ -25,4 +25,4 @@ jobs:
         run: pnpm run deploy
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-          BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
+          VITE_BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
