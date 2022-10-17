@@ -24,3 +24,4 @@ jobs:
         run: pnpm deploy
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          BACKEND_BASE_URL: ${{ secrets.BACKEND_BASE_URL }}
