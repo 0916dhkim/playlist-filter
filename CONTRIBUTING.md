@@ -2,7 +2,16 @@
 
 ## Requirements
 
-You need [pnpm](https://pnpm.io/) installed on your machine.
+You need [pnpm](https://pnpm.io/) & [Java](https://www.oracle.com/java/technologies/downloads/) runtime installed on your machine.
+Please confirm that you have those dependencies with the commands below:
+
+```
+pnpm --version
+```
+
+```
+java --version
+```
 
 ## How to Set up Your Development Environment
 
