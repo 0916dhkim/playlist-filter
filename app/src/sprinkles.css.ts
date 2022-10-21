@@ -2,6 +2,25 @@ import { createSprinkles, defineProperties } from "@vanilla-extract/sprinkles";
 
 import { vars } from "./theme.css";
 
+const length = {
+  auto: "auto",
+  "0": "0",
+  "1/4": "25%",
+  "1/2": "50%",
+  "3/4": "75%",
+  full: "100%",
+} as const;
+
+const width = {
+  ...length,
+  screen: "100vw",
+} as const;
+
+const height = {
+  ...length,
+  screen: "100vh",
+} as const;
+
 const responsiveProperties = defineProperties({
   conditions: {
     mobile: {},
@@ -21,10 +40,20 @@ const responsiveProperties = defineProperties({
       "space-between",
     ],
     alignItems: ["stretch", "flex-start", "center", "flex-end"],
+    width,
+    minWidth: width,
+    maxWidth: width,
+    height,
+    minHeight: height,
+    maxHeight: height,
     paddingTop: vars.spacing,
     paddingBottom: vars.spacing,
     paddingLeft: vars.spacing,
     paddingRight: vars.spacing,
+    marginTop: vars.spacing,
+    marginBottom: vars.spacing,
+    marginLeft: vars.spacing,
+    marginRight: vars.spacing,
     gap: vars.spacing,
     fontWeight: ["normal", "bold"],
     fontSize: vars.text,
@@ -33,6 +62,9 @@ const responsiveProperties = defineProperties({
     padding: ["paddingTop", "paddingBottom", "paddingLeft", "paddingRight"],
     paddingX: ["paddingLeft", "paddingRight"],
     paddingY: ["paddingTop", "paddingBottom"],
+    margin: ["marginTop", "marginBottom", "marginLeft", "marginRight"],
+    marginX: ["marginLeft", "marginRight"],
+    marginY: ["marginTop", "marginBottom"],
     placeItems: ["justifyContent", "alignItems"],
   },
 });
@@ -51,6 +83,7 @@ const colorProperties = defineProperties({
 
 const unresponsiveProperties = defineProperties({
   properties: {
+    boxSizing: ["border-box"],
     border: ["none"],
     borderRadius: vars.border.radius,
   },

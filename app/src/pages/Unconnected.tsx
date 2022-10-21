@@ -1,5 +1,6 @@
 import ConnectSpotifyButton from "../components/ConnectSpotifyButton";
 import { getProfile } from "../api/queries";
+import { sprinkles } from "../sprinkles.css";
 import { useEffect } from "react";
 import { useFirebaseAuthState } from "../firebase";
 import { useNavigate } from "react-router-dom";
@@ -25,5 +26,21 @@ export default function Unconnected() {
     }
   }, [profile]);
 
-  return <ConnectSpotifyButton />;
+  return (
+    <div
+      className={sprinkles({
+        minHeight: "screen",
+        paddingX: "xxl",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "lg",
+      })}
+    >
+      <h3>Welcome to Spotify Filter!</h3>
+      <p>Let's connect your Spotify account to get started.</p>
+      <ConnectSpotifyButton />
+    </div>
+  );
 }
