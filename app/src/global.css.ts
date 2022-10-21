@@ -19,17 +19,36 @@ globalStyle("a", {
   fontWeight: "bold",
 });
 
-globalStyle("input[type=email], input[type=password]", {
-  background: vars.palette.slate200,
-  color: vars.palette.black,
-  padding: vars.spacing.sm,
-  border: "none",
-  borderRadius: vars.border.radius.sm,
+globalStyle("h1", {
+  fontSize: vars.text.h1,
+  fontWeight: "bolder",
+});
+
+globalStyle("h2", {
+  fontSize: vars.text.h2,
+  fontWeight: "bold",
+});
+
+globalStyle("h3", {
+  fontSize: vars.text.h3,
+  fontWeight: "bold",
+});
+
+globalStyle("h4", {
+  fontSize: vars.text.h4,
+  fontWeight: "bold",
+});
+
+globalStyle("h5", {
+  fontSize: vars.text.h5,
+  fontWeight: "bold",
+});
+
+globalStyle("h6", {
   fontSize: vars.text.h6,
-  "@media": {
-    "(prefers-color-scheme: dark)": {
-      background: vars.palette.slate700,
-      color: vars.palette.zinc100,
-    },
-  },
+  fontWeight: "bold",
+});
+
+globalStyle("p", {
+  fontSize: vars.text.p,
 });
