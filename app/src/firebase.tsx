@@ -22,6 +22,7 @@ import {
   onAuthStateChanged as onAuthStateChangedOriginal,
   signInAnonymously,
   signInWithEmailAndPassword,
+  signOut
 } from "firebase/auth";
 
 import { initializeApp } from "firebase/app";
@@ -49,6 +50,10 @@ export const registerUser = async (email: string, password: string) => {
 
 export const signIn = async (email: string, password: string) => {
   return signInWithEmailAndPassword(auth, email, password);
+};
+
+export const signUserOut = () => {
+  return signOut(auth);
 };
 
 export const guestSignIn = async () => {
