@@ -1,6 +1,8 @@
 import { ReactElement } from "react";
-import { button } from "./ConnectSpotifyButton.css";
+import Button from "./Button"
 import { signUserOut } from "../firebase";
+import { sprinkles } from "../sprinkles.css";
+
 
 
 
@@ -14,12 +16,12 @@ export default function LogoutSpotifyButton(): ReactElement {
     };
     
   return (
-    <button
-      data-testid="logout-spotify-button"
-      className={button}
+    <Button
+    variant="primary"
+    className={sprinkles({ minWidth: { mobile: "1/2", tablet: "1/4" } })}
       onClick={logout}
-    >
-     Logout
-    </button>
+      >
+          Logout
+    </Button>
   );
 }
