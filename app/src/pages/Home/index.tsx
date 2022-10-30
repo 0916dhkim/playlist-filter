@@ -4,6 +4,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 
 import EditorForm from "./EditorForm";
 import PlaylistDetails from "./PlaylistDetails";
+import LogoutSpotifyButton from "../../components/LogoutSpotifyButton";
 import Playlists from "./Playlists";
 import { sprinkles } from "../../sprinkles.css";
 import { twoColumns } from "./index.css";
@@ -51,6 +52,7 @@ export default function Home(): ReactElement {
           Playlists
         </h4>
         <Playlists onSelect={selectPlaylist} />
+        <LogoutSpotifyButton/>
       </div>
       {state.selectedPlaylistId ? (
         <div
@@ -68,6 +70,6 @@ export default function Home(): ReactElement {
           />
         </div>
       ) : null}
-    </div>
+      </div>
   );
 }
