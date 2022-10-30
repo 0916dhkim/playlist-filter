@@ -1,5 +1,5 @@
 import ConnectSpotifyButton from "../components/ConnectSpotifyButton";
-import LogoutSpotifyButton from "../components/LogoutSpotifyButton"
+import LogoutSpotifyButton from "../components/LogoutSpotifyButton";
 import { getProfile } from "../api/queries";
 import { sprinkles } from "../sprinkles.css";
 import { useEffect } from "react";
@@ -42,7 +42,7 @@ export default function Unconnected() {
       <h3>Welcome to Spotify Filter!</h3>
       <p>Let's connect your Spotify account to get started.</p>
       <ConnectSpotifyButton />
-      <LogoutSpotifyButton/>
+      <LogoutSpotifyButton />
     </div>
   );
 }

@@ -22,7 +22,7 @@ import {
   onAuthStateChanged as onAuthStateChangedOriginal,
   signInAnonymously,
   signInWithEmailAndPassword,
-  signOut
+  signOut,
 } from "firebase/auth";
 
 import { initializeApp } from "firebase/app";
