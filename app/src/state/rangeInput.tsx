@@ -2,18 +2,22 @@ import { Atom, PrimitiveAtom, atom } from "jotai";
 
 export type RangeInputMolecule = {
   name: string;
-  minAtom: PrimitiveAtom<string>;
-  maxAtom: PrimitiveAtom<string>;
+  minAtom: PrimitiveAtom<number>;
+  maxAtom: PrimitiveAtom<number>;
+  sliderMinAtom: PrimitiveAtom<number>;
+  sliderMaxAtom: PrimitiveAtom<number>;
   errorAtom: Atom<string | undefined>;
 };
 
 export function RangeInputMolecule(
   name: string,
   min: number,
-  max: number
+  max: number,
 ): RangeInputMolecule {
-  const minAtom = atom(min.toString());
-  const maxAtom = atom(max.toString());
+  const minAtom = atom(Math.floor(min));
+  const maxAtom = atom(Math.ceil(max));
+  const sliderMinAtom = atom(Math.floor(min));
+  const sliderMaxAtom = atom(Math.ceil(max));
   const errorAtom = atom((get) => {
     const parsedMin = Number(get(minAtom));
     if (isNaN(parsedMin)) {
@@ -32,6 +36,8 @@ export function RangeInputMolecule(
     name,
     minAtom,
     maxAtom,
+    sliderMinAtom,
+    sliderMaxAtom,
     errorAtom,
   };
 }
