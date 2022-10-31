@@ -14,10 +14,13 @@ export function RangeInputMolecule(
   min: number,
   max: number,
 ): RangeInputMolecule {
-  const minAtom = atom(Math.floor(min));
-  const maxAtom = atom(Math.ceil(max));
-  const sliderMinAtom = atom(Math.floor(min));
-  const sliderMaxAtom = atom(Math.ceil(max));
+  const convertedMin = name == "durationMs" ? Math.floor(min/1000) : Math.floor(min)
+  const convertedMax = name == "durationMs" ? Math.ceil(max/1000) : Math.ceil(max)
+  const renamed = name == "durationMs" ? "duration (seconds)" : name
+  const minAtom = atom(convertedMin);
+  const maxAtom = atom(convertedMax);
+  const sliderMinAtom = atom(convertedMin);
+  const sliderMaxAtom = atom(convertedMax);
   const errorAtom = atom((get) => {
     const parsedMin = Number(get(minAtom));
     if (isNaN(parsedMin)) {
@@ -33,7 +36,7 @@ export function RangeInputMolecule(
     return undefined;
   });
   return {
-    name,
+    name:renamed,
     minAtom,
     maxAtom,
     sliderMinAtom,
