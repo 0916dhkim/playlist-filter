@@ -2,10 +2,10 @@ import { Atom, PrimitiveAtom, atom } from "jotai";
 
 export type RangeInputMolecule = {
   name: string;
-  minAtom: PrimitiveAtom<number>;
-  maxAtom: PrimitiveAtom<number>;
-  sliderMinAtom: PrimitiveAtom<number>;
-  sliderMaxAtom: PrimitiveAtom<number>;
+  minInputAtom: PrimitiveAtom<number>;
+  maxInputAtom: PrimitiveAtom<number>;
+  min: number;
+  max: number;
   errorAtom: Atom<string | undefined>;
 };
 
@@ -17,16 +17,14 @@ export function RangeInputMolecule(
   const convertedMin = name == "durationMs" ? Math.floor(min/1000) : Math.floor(min)
   const convertedMax = name == "durationMs" ? Math.ceil(max/1000) : Math.ceil(max)
   const renamed = name == "durationMs" ? "duration (seconds)" : name
-  const minAtom = atom(convertedMin);
-  const maxAtom = atom(convertedMax);
-  const sliderMinAtom = atom(convertedMin);
-  const sliderMaxAtom = atom(convertedMax);
+  const minInputAtom = atom(convertedMin);
+  const maxInputAtom = atom(convertedMax);
   const errorAtom = atom((get) => {
-    const parsedMin = Number(get(minAtom));
+    const parsedMin = Number(get(minInputAtom));
     if (isNaN(parsedMin)) {
       return "Invalid lower bound.";
     }
-    const parsedMax = Number(get(maxAtom));
+    const parsedMax = Number(get(maxInputAtom));
     if (isNaN(parsedMax)) {
       return "Invalid upper bound.";
     }
@@ -37,10 +35,10 @@ export function RangeInputMolecule(
   });
   return {
     name:renamed,
-    minAtom,
-    maxAtom,
-    sliderMinAtom,
-    sliderMaxAtom,
+    minInputAtom,
+    maxInputAtom,
+    min:convertedMin,
+    max:convertedMax,
     errorAtom,
   };
 }

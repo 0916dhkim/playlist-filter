@@ -10,16 +10,14 @@ type AudioFeatureRangeInputProps = {
 };
 
 export default function AudioFeatureRangeInput({
-  molecule: { name, minAtom, maxAtom,sliderMinAtom,sliderMaxAtom, errorAtom },
+  molecule: { name, minInputAtom, maxInputAtom,min,max, errorAtom },
 }: AudioFeatureRangeInputProps): ReactElement | null {
-  const sliderMin = useAtomValue(sliderMinAtom)
-  const sliderMax = useAtomValue(sliderMaxAtom)
   const error = useAtomValue(errorAtom);
   
   return (
     <div>
       <h6>{name}</h6>
-      <MinMaxSlider sliderMin={sliderMin} sliderMax={sliderMax} minAtom={minAtom} maxAtom={maxAtom} />
+      <MinMaxSlider sliderMin={min} sliderMax={max} minInputAtom={minInputAtom} maxInputAtom={maxInputAtom} />
       {error ? <p className={sprinkles({ color: "red500" })}>{error}</p> : null}
     </div>
   );
