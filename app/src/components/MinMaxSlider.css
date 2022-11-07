@@ -30,6 +30,8 @@
   .slider__range {
     background-color: #9fe5e1;
     z-index: 2;
+    left: calc(1% * var(--min-percent));
+    width: calc(1% * (var(--max-percent) - var(--min-percent)));
   }
   
   .slider__left-value,
