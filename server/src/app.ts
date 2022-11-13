@@ -1,3 +1,4 @@
+import { APP_BASE_URL, SESSION_SECRET, SPOTIFY_CLIENT_ID } from "./env";
 import {
   audioFeatureRangesSchema,
   calculateAudioFeatureRanges,
@@ -5,31 +6,37 @@ import {
 } from "./models";
 import express, { Router } from "express";
 
-import { FirebaseService } from "./services/firebase";
+import { DatabaseService } from "./services/database";
 import { SpotifyService } from "./services/spotify";
-import cors from "cors";
 import morgan from "morgan";
 import { parseJsonQuery } from "./lib/schema";
-import secrets from "./secrets";
+import session from "express-session";
 import { toPromise } from "./lib/observable";
-import { validateFirebaseIdToken } from "./middleware";
 import z from "zod";
 
-const firebaseService = FirebaseService();
-const spotifyService = SpotifyService(firebaseService);
+const databaseService = DatabaseService();
+const spotifyService = SpotifyService(databaseService);
 
 const app = express();
 
 app.use(morgan("short"));
-app.use(cors());
+app.use(
+  session({
+    secret: SESSION_SECRET,
+    cookie: {},
+  })
+);
+app.use(express.json());
 
 const api = Router();
 app.use("/api", api);
-api.use(validateFirebaseIdToken);
 
 api.get("/profile", async (req, res, next) => {
+  if (req.session.uid == null) {
+    return res.sendStatus(403);
+  }
   try {
-    const profile = await firebaseService.getProfile(req.uid);
+    const profile = await databaseService.getProfile(req.session.uid);
 
     return res.json({
       profile,
@@ -43,9 +50,9 @@ api.get("/spotify-login-url", (req, res) => {
   const loginUrl =
     "https://accounts.spotify.com/authorize?" +
     new URLSearchParams({
-      client_id: secrets.SPOTIFY_CLIENT_ID,
+      client_id: SPOTIFY_CLIENT_ID,
       response_type: "code",
-      redirect_uri: `${secrets.APP_BASE_URL}/callback`,
+      redirect_uri: `${APP_BASE_URL}/callback`,
       scope: "playlist-read-private playlist-modify-private",
     }).toString();
 
@@ -54,14 +61,15 @@ api.get("/spotify-login-url", (req, res) => {
   });
 });
 
-api.post("/connect-spotify", async (req, res, next) => {
+api.post("/signin", async (req, res, next) => {
   try {
     const { code } = req.body;
     if (typeof code !== "string") {
       return res.status(400).send("No code provided");
     }
 
-    await spotifyService.connectSpotify(req.uid, code);
+    const uid = await spotifyService.signIn(code);
+    req.session.uid = uid;
 
     return res.sendStatus(200);
   } catch (err) {
@@ -69,10 +77,23 @@ api.post("/connect-spotify", async (req, res, next) => {
   }
 });
 
+api.post("/signout", (req, res, next) => {
+  req.session.destroy((err) => {
+    if (err == null) {
+      res.sendStatus(200);
+    } else {
+      next(err);
+    }
+  });
+});
+
 api.get("/playlists", async (req, res, next) => {
+  if (req.session.uid == null) {
+    return res.sendStatus(403);
+  }
   try {
     const playlists = await toPromise(
-      spotifyService.getPlaylists(spotifyService.getValidToken(req.uid))
+      spotifyService.getPlaylists(spotifyService.getValidToken(req.session.uid))
     );
 
     return res.json({
@@ -84,9 +105,12 @@ api.get("/playlists", async (req, res, next) => {
 });
 
 api.get("/playlists/:id", async (req, res, next) => {
+  if (req.session.uid == null) {
+    return res.sendStatus(403);
+  }
   try {
     const playlist = await spotifyService.getPlaylist(
-      spotifyService.getValidToken(req.uid),
+      spotifyService.getValidToken(req.session.uid),
       req.params.id
     );
     return res.json({ playlist });
@@ -96,10 +120,13 @@ api.get("/playlists/:id", async (req, res, next) => {
 });
 
 api.get("/playlists/:id/tracks", async (req, res, next) => {
+  if (req.session.uid == null) {
+    return res.sendStatus(403);
+  }
   try {
     const tracks = await toPromise(
       spotifyService
-        .getTracks(spotifyService.getValidToken(req.uid), req.params.id)
+        .getTracks(spotifyService.getValidToken(req.session.uid), req.params.id)
         .pipe(
           filterByAudioFeatureRanges(
             parseJsonQuery(
@@ -120,6 +147,9 @@ api.get("/playlists/:id/tracks", async (req, res, next) => {
 });
 
 api.post("/playlists/:id/export", async (req, res, next) => {
+  if (req.session.uid == null) {
+    return res.sendStatus(403);
+  }
   try {
     const { playlistName, audioFeatureRanges } = z
       .object({
@@ -128,7 +158,7 @@ api.post("/playlists/:id/export", async (req, res, next) => {
       })
       .parse(req.body);
     const playlistId = await spotifyService.exportPlaylist(
-      spotifyService.getValidToken(req.uid),
+      spotifyService.getValidToken(req.session.uid),
       req.params.id,
       playlistName,
       audioFeatureRanges
