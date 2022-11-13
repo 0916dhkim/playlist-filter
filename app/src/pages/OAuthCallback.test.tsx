@@ -2,10 +2,10 @@ import { expect, test, vi } from "vitest";
 import { render, waitFor } from "@testing-library/react";
 
 import OAuthCallback from "./OAuthCallback";
-import { connectSpotify } from "../firebase";
+import { signIn } from "../api/mutations";
 import { useNavigate } from "react-router-dom";
 
-vi.mock("../firebase");
+vi.mock("../api/mutations");
 vi.mock("react-router-dom");
 
 test("Callback page redirects the user to home after connecting Spotify", async () => {
@@ -16,8 +16,6 @@ test("Callback page redirects the user to home after connecting Spotify", async 
 
   render(<OAuthCallback />);
 
-  await waitFor(() =>
-    expect(vi.mocked(connectSpotify)).toHaveBeenCalledWith(code)
-  );
+  await waitFor(() => expect(vi.mocked(signIn)).toHaveBeenCalledWith(code));
   expect(mockNavigate).toHaveBeenCalledWith("/");
 });

@@ -1,4 +1,3 @@
-import { ReactElement, useEffect } from "react";
 import { appAtom, selectPlaylistAtom } from "../../state/app";
 import { useAtomValue, useSetAtom } from "jotai";
 
@@ -6,10 +5,9 @@ import EditorForm from "./EditorForm";
 import LogoutSpotifyButton from "../../components/LogoutSpotifyButton";
 import PlaylistDetails from "./PlaylistDetails";
 import Playlists from "./Playlists";
+import { ReactElement } from "react";
 import { sprinkles } from "../../sprinkles.css";
 import { twoColumns } from "./index.css";
-import { useFirebaseAuthState } from "../../firebase";
-import { useNavigate } from "react-router-dom";
 
 /**
  * The main playlist editing page.
@@ -18,16 +16,8 @@ import { useNavigate } from "react-router-dom";
  * before reaching this page.
  */
 export default function Home(): ReactElement {
-  const hasAuth = useFirebaseAuthState();
-  const navigate = useNavigate();
   const state = useAtomValue(appAtom);
   const selectPlaylist = useSetAtom(selectPlaylistAtom);
-
-  useEffect(() => {
-    if (!hasAuth) {
-      navigate("/signin");
-    }
-  }, [hasAuth]);
 
   return (
     <div className={twoColumns}>

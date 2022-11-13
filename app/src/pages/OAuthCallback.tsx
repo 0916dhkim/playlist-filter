@@ -1,6 +1,5 @@
-import { connectSpotify, useFirebaseAuthState } from "../firebase";
-
 import type { NavigateFunction } from "react-router-dom";
+import { signIn } from "../api/mutations";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -16,14 +15,13 @@ const handleOAuthCallback = async (navigate: NavigateFunction) => {
     throw new Error("Callback page is requested without code");
   }
 
-  await connectSpotify(code);
+  await signIn(code);
 
   navigate("/");
 };
 
 export default function OAuthCallback() {
   const navigate = useNavigate();
-  const hasAuth = useFirebaseAuthState();
 
   useEffect(() => {
     handleOAuthCallback(navigate);
@@ -31,8 +29,7 @@ export default function OAuthCallback() {
 
   return (
     <div>
-      <h1>OAuthCallback</h1>
-      {hasAuth ? <p>Connecting spotify</p> : <p>not logged in</p>}
+      <p>Connecting your Spotify account...</p>
     </div>
   );
 }
