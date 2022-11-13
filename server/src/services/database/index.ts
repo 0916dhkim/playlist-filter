@@ -6,7 +6,9 @@ import { Profile } from "../../models";
 import mongoose from "mongoose";
 
 export const DatabaseService = () => {
-  mongoose.connect(MONGO_URI);
+  mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 1000 }).catch(() => {
+    throw new Error(`Failed to connect MongoDB! Check your MONGO_URI`);
+  });
 
   return {
     getAuthDoc: (uid: string) => SpotifyAuth.findById(uid).exec(),
