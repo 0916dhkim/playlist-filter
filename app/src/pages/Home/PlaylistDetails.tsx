@@ -1,4 +1,8 @@
-import { container, thumbnail } from "./PlaylistDetails.css";
+import {
+  container,
+  thumbnail,
+  thumbnailPlaceholder,
+} from "./PlaylistDetails.css";
 
 import { ReactElement } from "react";
 import { getPlaylistDetails } from "../../api/queries";
@@ -13,10 +17,15 @@ export default function PlaylistDetails({
   playlistId,
 }: PlayslistDetailsProps): ReactElement {
   const result = useQuery(...getPlaylistDetails(playlistId));
+  const thumbnailSrc = result.data?.images[0]?.url;
 
   return (
     <div className={container}>
-      <img src={result.data?.images[0].url} className={thumbnail} />
+      {thumbnailSrc ? (
+        <img src={thumbnailSrc} className={thumbnail} />
+      ) : (
+        <div className={thumbnailPlaceholder} />
+      )}
       <h1
         className={sprinkles({
           fontWeight: "bold",

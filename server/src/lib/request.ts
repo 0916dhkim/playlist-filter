@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 export type Request<TVariables, TResponse> = {
   type: "GET" | "POST";
@@ -27,24 +27,34 @@ export async function runRequest<TVariables, TResponse>(
   const headers = request.headers?.(variables);
   const body = request.body?.(variables);
   const params = request.urlParams?.(variables);
-  switch (request.type) {
-    case "GET":
-      return request.responseParser(
-        (
-          await axios.get(url, {
-            headers,
-            params,
-          })
-        ).data
-      );
-    case "POST":
-      return request.responseParser(
-        (
-          await axios.post(url, body, {
-            headers,
-            params,
-          })
-        ).data
-      );
+
+  console.debug(`Fetching ${url}`);
+
+  try {
+    switch (request.type) {
+      case "GET":
+        return request.responseParser(
+          (
+            await axios.get(url, {
+              headers,
+              params,
+            })
+          ).data
+        );
+      case "POST":
+        return request.responseParser(
+          (
+            await axios.post(url, body, {
+              headers,
+              params,
+            })
+          ).data
+        );
+    }
+  } catch (err) {
+    if (err instanceof AxiosError) {
+      console.error("Fetch failure", err.response?.data);
+    }
+    throw err;
   }
 }

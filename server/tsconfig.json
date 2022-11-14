@@ -5,11 +5,13 @@
     "noImplicitReturns": true,
     "noUncheckedIndexedAccess": true,
     "noUnusedLocals": true,
-    "outDir": "lib",
-    "sourceMap": true,
+    "target": "es2016",
+    "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "target": "es2017",
-    "preserveWatchOutput": true
+    "skipLibCheck": true,
+    "preserveWatchOutput": true,
+    "noEmit": true,
+    "typeRoots": ["types"]
   },
   "compileOnSave": true,
   "include": ["src"]

@@ -1,33 +1,28 @@
-import { FormEvent, ReactElement, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { guestSignIn, signIn, useFirebaseAuthState } from "../firebase";
+import { MouseEventHandler, ReactElement } from "react";
+import { getProfile, getSpotifyLoginUrl } from "../api/queries";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import Button from "../components/Button";
-import { StackList } from "../components/StackList";
-import StackListItem from "../components/StackListItem";
-import TextInput from "../components/TextInput";
+import { redirect } from "../browser";
 import { sprinkles } from "../sprinkles.css";
+import { useNavigate } from "react-router-dom";
 
 export default function SignIn(): ReactElement {
-  const hasAuth = useFirebaseAuthState();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  useQuery(...getProfile(), {
+    onSuccess: () => {
+      navigate("/");
+    },
+  });
 
-  const handleSignIn = (e: FormEvent) => {
-    e.preventDefault();
-    signIn(email, password);
+  const handleSignIn: MouseEventHandler = async () => {
+    const url = await queryClient.fetchQuery(...getSpotifyLoginUrl());
+    redirect(url);
   };
 
-  useEffect(() => {
-    if (hasAuth) {
-      navigate("/unconnected");
-    }
-  }, [hasAuth]);
-
   return (
-    <form
-      onSubmit={handleSignIn}
+    <div
       className={sprinkles({
         boxSizing: "border-box",
         minHeight: "screen",
@@ -43,46 +38,13 @@ export default function SignIn(): ReactElement {
       <h2>
         <i>🖭</i> Spotify Filter <i>🎶</i>
       </h2>
-      <StackList>
-        <StackListItem icon="✉️">
-          <TextInput
-            type="email"
-            name="email"
-            placeholder="Email"
-            variant="borderless"
-            value={email}
-            className={sprinkles({ width: "full" })}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </StackListItem>
-        <StackListItem icon="🔒">
-          <TextInput
-            type="password"
-            name="password"
-            placeholder="Password"
-            variant="borderless"
-            value={password}
-            className={sprinkles({ width: "full" })}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </StackListItem>
-      </StackList>
       <Button
         variant="primary"
         className={sprinkles({ minWidth: { mobile: "1/2", tablet: "1/4" } })}
+        onClick={handleSignIn}
       >
-        Login
+        Sign in with Spotify
       </Button>
-      <Button
-        type="button"
-        className={sprinkles({ minWidth: { mobile: "1/2", tablet: "1/4" } })}
-        onClick={() => guestSignIn()}
-      >
-        Guest Login
-      </Button>
-      <p>
-        Not a user yet? <Link to="/register">Register</Link>
-      </p>
-    </form>
+    </div>
   );
 }

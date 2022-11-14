@@ -4,13 +4,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"pnpm app:dev\" \"pnpm app:typecheck:watch\" \"pnpm functions:dev\" \"pnpm functions:typecheck:watch\"",
+    "dev": "concurrently \"pnpm app:dev\" \"pnpm app:typecheck:watch\" \"pnpm server:dev\"",
     "app:typecheck:watch": "pnpm --filter @spotify-filter/app typecheck:watch",
     "app:dev": "pnpm --filter @spotify-filter/app dev",
-    "functions:typecheck:watch": "pnpm --filter @spotify-filter/functions typecheck:watch",
-    "functions:dev": "pnpm --filter @spotify-filter/functions dev",
+    "server:dev": "pnpm --filter @spotify-filter/server dev",
+    "server:start": "pnpm --filter @spotify-filter/server start",
     "build": "pnpm run --recursive build",
-    "deploy": "pnpm build && firebase deploy"
+    "deploy": "firebase deploy"
   },
   "devDependencies": {
     "concurrently": "^7.4.0",

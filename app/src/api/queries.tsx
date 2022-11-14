@@ -8,7 +8,6 @@ import {
 
 import { QueryFunctionContext } from "@tanstack/react-query";
 import { Tail } from "../typeHelpers";
-import { getIdToken } from "../firebase";
 import z from "zod";
 
 type AnyQueryFunction = (
@@ -35,11 +34,7 @@ export const queryKey = <TKey, TFunction extends AnyQueryFunction>(
 export const getProfile = Query(
   "profile",
   async ({ signal }): Promise<Profile> => {
-    const idToken = await getIdToken();
     const response = await fetch("/api/profile", {
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-      },
       signal,
     });
 
@@ -56,14 +51,25 @@ export const getProfile = Query(
   }
 );
 
+export const getSpotifyLoginUrl = Query(
+  "spotifyLoginUrl",
+  async ({ signal }): Promise<string> => {
+    const response = await fetch("/api/spotify-login-url", { signal });
+
+    const { url } = z
+      .object({
+        url: z.string(),
+      })
+      .parse(await response.json());
+
+    return url;
+  }
+);
+
 export const getPlaylists = Query(
   "playlists",
   async ({ signal }): Promise<Playlist[]> => {
-    const idToken = await getIdToken();
     const response = await fetch("/api/playlists", {
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-      },
       signal,
     });
 
@@ -85,12 +91,7 @@ export const getPlaylists = Query(
 export const getPlaylistDetails = Query(
   "playlist",
   async ({ signal }, playlistId: string): Promise<PlaylistDetails> => {
-    const idToken = await getIdToken();
-
     const response = await fetch(`/api/playlists/${playlistId}`, {
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-      },
       signal,
     });
 
@@ -123,8 +124,6 @@ export const getTracks = Query(
     tracks: Track[];
     audioFeatureRanges: AudioFeatureRanges;
   }> => {
-    const idToken = await getIdToken();
-
     const params = new URLSearchParams();
     if (audioFeatureRanges) {
       params.append("audioFeatureRanges", JSON.stringify(audioFeatureRanges));
@@ -133,9 +132,6 @@ export const getTracks = Query(
     url.pathname = `/api/playlists/${playlistId}/tracks`;
     url.search = params.toString();
     const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-      },
       signal,
     });
 

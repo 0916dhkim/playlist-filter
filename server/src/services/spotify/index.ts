@@ -30,7 +30,7 @@ import {
 } from "./api";
 import { pairByKey, partitionMerge, toPromise } from "../../lib/observable";
 
-import { FirebaseService } from "../firebase";
+import { DatabaseService } from "../database";
 import invariant from "tiny-invariant";
 
 function assembleTracks(
@@ -58,17 +58,17 @@ function assembleTracks(
   );
 }
 
-export const SpotifyService = (firebaseService: FirebaseService) => {
+export const SpotifyService = (databaseService: DatabaseService) => {
   async function getValidToken(uid: string): Promise<string> {
     const now = Math.floor(new Date().getTime() / 1000);
-    const authDoc = await firebaseService.getAuthDoc(uid);
+    const authDoc = await databaseService.getAuthDoc(uid);
     invariant(authDoc); // TODO: Handle this case.
 
     if (authDoc.expiresAt <= now) {
       const refreshed = await runRequest(tokenRefreshRequest, {
         refreshToken: authDoc.refreshToken,
       });
-      await firebaseService.updateAuthDoc(uid, {
+      await databaseService.updateAuthDoc(uid, {
         accessToken: refreshed.accessToken,
         expiresAt: now + refreshed.expiresIn,
       });
@@ -77,18 +77,25 @@ export const SpotifyService = (firebaseService: FirebaseService) => {
     return authDoc.accessToken;
   }
 
-  async function connectSpotify(uid: string, code: string): Promise<void> {
+  /**
+   * Sign in with Spotify and return the Spotify user ID.
+   */
+  async function signIn(code: string): Promise<string> {
     const { accessToken, refreshToken, expiresIn } = await runRequest(
       tokenRequest,
       { code }
     );
+    const user = await runRequest(meRequest, { accessToken });
     const now = Math.floor(new Date().getTime() / 1000);
 
-    await firebaseService.createAuthDoc(uid, {
+    await databaseService.createAuthDoc({
+      _id: user.id,
       accessToken,
       refreshToken,
       expiresAt: now + expiresIn,
     });
+
+    return user.id;
   }
 
   function getPlaylists(accessToken$: Promise<string>): Observable<Playlist> {
@@ -120,7 +127,7 @@ export const SpotifyService = (firebaseService: FirebaseService) => {
     return trackId$.pipe(
       concatMap(
         (trackId) =>
-          firebaseService
+          databaseService
             .getAudioFeaturesCache(trackId)
             .then((cache) => (cache ? { id: trackId, ...cache } : trackId)) // Push trackId if cache miss. Push cache if hit.
       ),
@@ -135,7 +142,7 @@ export const SpotifyService = (firebaseService: FirebaseService) => {
           ),
           concatMap(identity),
           tap((audioFeatures) =>
-            firebaseService.setAudioFeaturesCache(
+            databaseService.setAudioFeaturesCache(
               audioFeatures.id,
               audioFeatures
             )
@@ -205,7 +212,7 @@ export const SpotifyService = (firebaseService: FirebaseService) => {
 
   return {
     getValidToken,
-    connectSpotify,
+    signIn,
     getPlaylists,
     getPlaylist,
     getTracks,

@@ -6,12 +6,25 @@ on:
     branches:
       - main
 
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_SERVICE_NAME: backend
+  GCP_REGION: ${{ secrets.GCP_REGION }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: firebase
     steps:
       - uses: actions/checkout@v3
+      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: "275.0.0"
+          service_account_email: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+      - name: Set GCP project ID
+        run: |
+          gcloud config set project $GCP_PROJECT_ID
       - uses: pnpm/action-setup@v2.2.2
         with:
           version: 7
@@ -19,9 +32,24 @@ jobs:
         with:
           node-version: 16
           cache: "pnpm"
+
+      # Build
+      - name: Build backend
+        run: |
+          gcloud builds submit -t gcr.io/$GCP_PROJECT_ID/$GCP_SERVICE_NAME:$GITHUB_SHA
       - name: Download deps
         run: pnpm install
-      - name: Deploy
+      - name: Build app
+        run: pnpm build
+
+      # Deploy
+      - name: Deploy backend
+        run: |
+          gcloud run deploy $GCP_SERVICE_NAME \
+          --region $GCP_REGION \
+          --image gcr.io/$GCP_PROJECT_ID/$GCP_SERVICE_NAME:$GITHUB_SHA \
+          --platform managed
+      - name: Deploy hosting
         run: pnpm run deploy
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
