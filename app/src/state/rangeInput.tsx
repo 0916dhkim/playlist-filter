@@ -12,11 +12,13 @@ export type RangeInputMolecule = {
 export function RangeInputMolecule(
   name: string,
   min: number,
-  max: number,
+  max: number
 ): RangeInputMolecule {
-  const convertedMin = name == "durationMs" ? Math.floor(min/1000) : Math.floor(min)
-  const convertedMax = name == "durationMs" ? Math.ceil(max/1000) : Math.ceil(max)
-  const renamed = name == "durationMs" ? "duration (seconds)" : name
+  const convertedMin =
+    name == "durationMs" ? Math.floor(min / 1000) : Math.floor(min);
+  const convertedMax =
+    name == "durationMs" ? Math.ceil(max / 1000) : Math.ceil(max);
+  const renamed = name == "durationMs" ? "duration (seconds)" : name;
   const minInputAtom = atom(convertedMin);
   const maxInputAtom = atom(convertedMax);
   const errorAtom = atom((get) => {
@@ -34,11 +36,11 @@ export function RangeInputMolecule(
     return undefined;
   });
   return {
-    name:renamed,
+    name: renamed,
     minInputAtom,
     maxInputAtom,
-    min:convertedMin,
-    max:convertedMax,
+    min: convertedMin,
+    max: convertedMax,
     errorAtom,
   };
 }
