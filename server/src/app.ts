@@ -24,6 +24,9 @@ app.use(
   session({
     secret: SESSION_SECRET,
     cookie: {},
+    // Firebase hosting strips all cookies except "__session".
+    // https://firebase.google.com/docs/hosting/manage-cache#using_cookies
+    name: "__session",
   })
 );
 app.use(express.json());
