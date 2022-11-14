@@ -13,3 +13,9 @@ export const container = sprinkles({
 export const thumbnail = style({
   width: calc.multiply(64, vars.grid),
 });
+
+export const thumbnailPlaceholder = style({
+  width: calc.multiply(64, vars.grid),
+  height: calc.multiply(64, vars.grid),
+  background: vars.palette.zinc600,
+});
