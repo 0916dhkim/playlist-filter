@@ -17,7 +17,7 @@ jobs:
     environment: firebase
     steps:
       - uses: actions/checkout@v3
-      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@v1
         with:
           version: "275.0.0"
           service_account_email: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
