@@ -7,6 +7,7 @@ import {
 import express, { Router } from "express";
 
 import { DatabaseService } from "./services/database";
+import MongoStore from "connect-mongo";
 import { SpotifyService } from "./services/spotify";
 import morgan from "morgan";
 import { parseJsonQuery } from "./lib/schema";
@@ -24,6 +25,13 @@ app.use(
   session({
     secret: SESSION_SECRET,
     cookie: {},
+    store: MongoStore.create({
+      clientPromise: databaseService.client$,
+      collectionName: "Session",
+      mongoOptions: {
+        serverSelectionTimeoutMS: 1000,
+      },
+    }),
     // Firebase hosting strips all cookies except "__session".
     // https://firebase.google.com/docs/hosting/manage-cache#using_cookies
     name: "__session",
