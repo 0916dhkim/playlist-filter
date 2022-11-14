@@ -19,24 +19,29 @@ export interface IAudioFeaturesCache {
   };
 }
 
-const audioFeaturesCacheSchema = new Schema<IAudioFeaturesCache>({
-  _id: { type: String, required: true },
-  expiresAt: { type: Number, required: true },
-  audioFeatures: {
-    accousticness: { type: Number, required: false },
-    danceability: { type: Number, required: false },
-    duration_ms: { type: Number, required: false },
-    energy: { type: Number, required: false },
-    instrumentalness: { type: Number, required: false },
-    liveness: { type: Number, required: false },
-    loudness: { type: Number, required: false },
-    mode: { type: Number, required: false },
-    speechiness: { type: Number, required: false },
-    tempo: { type: Number, required: false },
-    time_signature: { type: Number, required: false },
-    valence: { type: Number, required: false },
+const audioFeaturesCacheSchema = new Schema<IAudioFeaturesCache>(
+  {
+    _id: { type: String, required: true },
+    expiresAt: { type: Number, required: true },
+    audioFeatures: {
+      accousticness: { type: Number, required: false },
+      danceability: { type: Number, required: false },
+      duration_ms: { type: Number, required: false },
+      energy: { type: Number, required: false },
+      instrumentalness: { type: Number, required: false },
+      liveness: { type: Number, required: false },
+      loudness: { type: Number, required: false },
+      mode: { type: Number, required: false },
+      speechiness: { type: Number, required: false },
+      tempo: { type: Number, required: false },
+      time_signature: { type: Number, required: false },
+      valence: { type: Number, required: false },
+    },
   },
-});
+  {
+    collection: "AudioFeaturesCache",
+  }
+);
 
 export const AudioFeaturesCache = model<IAudioFeaturesCache>(
   "AudioFeaturesCache",

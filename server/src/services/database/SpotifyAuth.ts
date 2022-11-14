@@ -6,12 +6,17 @@ export interface ISpotifyAuth {
   expiresAt: number;
 }
 
-const spotifyAuthSchema = new Schema<ISpotifyAuth>({
-  _id: { type: String, required: true },
-  accessToken: { type: String, required: true },
-  refreshToken: { type: String, required: true },
-  expiresAt: { type: Number, required: true },
-});
+const spotifyAuthSchema = new Schema<ISpotifyAuth>(
+  {
+    _id: { type: String, required: true },
+    accessToken: { type: String, required: true },
+    refreshToken: { type: String, required: true },
+    expiresAt: { type: Number, required: true },
+  },
+  {
+    collection: "SpotifyAuth",
+  }
+);
 
 export const SpotifyAuth = model<ISpotifyAuth>(
   "SpotifyAuth",
