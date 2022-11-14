@@ -52,8 +52,8 @@ export function AudioFeatureRangesMolecule(
       const rangeInputMolecule = rangeInputMolecules[feature];
       if (rangeInputMolecule) {
         ret[feature] = {
-          min: Number(get(rangeInputMolecule.minAtom)),
-          max: Number(get(rangeInputMolecule.maxAtom)),
+          min: Number(get(rangeInputMolecule.minInputAtom)),
+          max: Number(get(rangeInputMolecule.maxInputAtom)),
         };
       }
     }
