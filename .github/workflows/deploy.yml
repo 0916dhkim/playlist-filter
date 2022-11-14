@@ -17,11 +17,10 @@ jobs:
     environment: firebase
     steps:
       - uses: actions/checkout@v3
-      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@v1
+      - uses: google-github-actions/auth@v1
         with:
-          version: "275.0.0"
-          service_account_email: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
-          service_account_key: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+      - uses: google-github-actions/setup-gcloud@v1
       - name: Set GCP project ID
         run: |
           gcloud config set project $GCP_PROJECT_ID
