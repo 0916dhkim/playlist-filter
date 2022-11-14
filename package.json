@@ -8,8 +8,9 @@
     "app:typecheck:watch": "pnpm --filter @spotify-filter/app typecheck:watch",
     "app:dev": "pnpm --filter @spotify-filter/app dev",
     "server:dev": "pnpm --filter @spotify-filter/server dev",
+    "server:start": "pnpm --filter @spotify-filter/server start",
     "build": "pnpm run --recursive build",
-    "deploy": "pnpm build && firebase deploy"
+    "deploy": "firebase deploy"
   },
   "devDependencies": {
     "concurrently": "^7.4.0",
