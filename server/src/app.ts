@@ -52,7 +52,7 @@ api.get("/spotify-login-url", (req, res) => {
     new URLSearchParams({
       client_id: SPOTIFY_CLIENT_ID,
       response_type: "code",
-      redirect_uri: `${APP_BASE_URL}/callback`,
+      redirect_uri: `${APP_BASE_URL}/api/signin`,
       scope: "playlist-read-private playlist-modify-private",
     }).toString();
 
@@ -61,9 +61,12 @@ api.get("/spotify-login-url", (req, res) => {
   });
 });
 
-api.post("/signin", async (req, res, next) => {
+api.get("/signin", async (req, res, next) => {
   try {
-    const { code } = req.body;
+    const { code, error } = req.query;
+    if (error) {
+      return res.status(500).send("Failed to login");
+    }
     if (typeof code !== "string") {
       return res.status(400).send("No code provided");
     }
@@ -71,7 +74,7 @@ api.post("/signin", async (req, res, next) => {
     const uid = await spotifyService.signIn(code);
     req.session.uid = uid;
 
-    return res.sendStatus(200);
+    return res.redirect("/");
   } catch (err) {
     return next(err);
   }

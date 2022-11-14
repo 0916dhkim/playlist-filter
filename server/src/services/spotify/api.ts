@@ -43,7 +43,7 @@ export const tokenRequest = buildRequest({
     const form = new URLSearchParams();
     form.append("grant_type", "authorization_code");
     form.append("code", code);
-    form.append("redirect_uri", `${APP_BASE_URL}/callback`);
+    form.append("redirect_uri", `${APP_BASE_URL}/api/signin`);
     return form;
   },
   responseParser: (response) => {
