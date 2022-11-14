@@ -23,11 +23,14 @@ export function AudioFeatureRangesMolecule(
   for (const feature of ALL_AUDIO_FEATURES) {
     const range = audioFeatureRanges[feature];
     if (range) {
-      rangeInputMolecules[feature] = RangeInputMolecule(
-        feature,
-        range.min,
-        range.max
-      );
+      rangeInputMolecules[feature] =
+        feature === "durationMs"
+          ? RangeInputMolecule(
+              "duration (seconds)",
+              range.min / 1000,
+              range.max / 1000
+            )
+          : RangeInputMolecule(feature, range.min, range.max);
     }
   }
   const hasErrorAtom = atom((get) => {
@@ -51,10 +54,16 @@ export function AudioFeatureRangesMolecule(
     for (const feature of ALL_AUDIO_FEATURES) {
       const rangeInputMolecule = rangeInputMolecules[feature];
       if (rangeInputMolecule) {
-        ret[feature] = {
-          min: Number(get(rangeInputMolecule.minInputAtom)),
-          max: Number(get(rangeInputMolecule.maxInputAtom)),
-        };
+        ret[feature] =
+          feature === "durationMs"
+            ? {
+                min: Number(get(rangeInputMolecule.minInputAtom) * 1000),
+                max: Number(get(rangeInputMolecule.maxInputAtom) * 1000),
+              }
+            : {
+                min: Number(get(rangeInputMolecule.minInputAtom)),
+                max: Number(get(rangeInputMolecule.maxInputAtom)),
+              };
       }
     }
     return ret;
