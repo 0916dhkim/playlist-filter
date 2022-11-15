@@ -11,8 +11,8 @@
     "skipLibCheck": true,
     "preserveWatchOutput": true,
     "noEmit": true,
-    "typeRoots": ["types"]
+    "typeRoots": ["types", "node_modules/@types"]
   },
   "compileOnSave": true,
-  "include": ["src"]
+  "include": ["src", "test"]
 }
