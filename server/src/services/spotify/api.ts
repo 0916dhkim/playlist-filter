@@ -1,8 +1,3 @@
-import {
-  APP_BASE_URL,
-  SPOTIFY_CLIENT_ID,
-  SPOTIFY_CLIENT_SECRET,
-} from "../../env";
 import { Request, buildRequest } from "../../lib/request";
 
 import { z } from "zod";
@@ -30,20 +25,23 @@ const buildSpotifyApiRequest = <TVariables, TResponse>(
 
 type TokenRequestInput = {
   code: string;
+  appBaseUrl: string;
+  clientId: string;
+  clientSecret: string;
 };
 export const tokenRequest = buildRequest({
   type: "POST",
   url: () => "https://accounts.spotify.com/api/token",
-  headers: () => ({
-    Authorization: `Basic ${Buffer.from(
-      `${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`
-    ).toString("base64")}`,
+  headers: ({ clientId, clientSecret }: TokenRequestInput) => ({
+    Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString(
+      "base64"
+    )}`,
   }),
-  body: ({ code }: TokenRequestInput) => {
+  body: ({ appBaseUrl, code }: TokenRequestInput) => {
     const form = new URLSearchParams();
     form.append("grant_type", "authorization_code");
     form.append("code", code);
-    form.append("redirect_uri", `${APP_BASE_URL}/api/signin`);
+    form.append("redirect_uri", `${appBaseUrl}/api/signin`);
     return form;
   },
   responseParser: (response) => {
@@ -63,14 +61,16 @@ export const tokenRequest = buildRequest({
 
 type TokenRefreshRequestInput = {
   refreshToken: string;
+  clientId: string;
+  clientSecret: string;
 };
 export const tokenRefreshRequest = buildRequest({
   type: "POST",
   url: () => "https://accounts.spotify.com/api/token",
-  headers: () => ({
-    Authorization: `Basic ${Buffer.from(
-      `${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`
-    ).toString("base64")}`,
+  headers: ({ clientId, clientSecret }: TokenRefreshRequestInput) => ({
+    Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString(
+      "base64"
+    )}`,
   }),
   body: ({ refreshToken }: TokenRefreshRequestInput) => {
     const form = new URLSearchParams();

@@ -15,7 +15,7 @@ import {
 import { ProfileHandler } from "./handlers/profile";
 import { ServiceProvider } from "./services";
 
-export function App(service: ServiceProvider = ServiceProvider()) {
+export function App(service: ServiceProvider) {
   const app = express();
 
   app.use(morgan("short"));
@@ -26,7 +26,7 @@ export function App(service: ServiceProvider = ServiceProvider()) {
   app.use("/api", api);
 
   api.get("/profile", ProfileHandler(service("database")));
-  api.get("/spotify-login-url", SpotifyLoginUrlHandler());
+  api.get("/spotify-login-url", SpotifyLoginUrlHandler(service("env")));
   api.get("/signin", SignInHandler(service("spotify")));
   api.post("/signout", SignOutHandler());
   api.get("/playlists", PlaylistsHandler(service("spotify")));

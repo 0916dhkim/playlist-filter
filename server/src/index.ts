@@ -1,6 +1,8 @@
 import { App } from "./app";
-import { PORT } from "./env";
+import { ServiceProvider } from "./services";
 
-App().listen(PORT, () => {
-  console.log(`API server listening to ${PORT}...`);
+const service = ServiceProvider();
+
+App(service).listen(service("env").PORT, () => {
+  console.log(`API server listening to ${service("env").PORT}...`);
 });
