@@ -1,15 +1,16 @@
 import { RequestHandler } from "express";
-import { APP_BASE_URL, SPOTIFY_CLIENT_ID } from "../env";
+import { EnvService } from "../services/env";
 import { SpotifyService } from "../services/spotify";
 
 export const SpotifyLoginUrlHandler =
-  (): RequestHandler => async (req, res, next) => {
+  (env: EnvService): RequestHandler =>
+  async (req, res, next) => {
     const loginUrl =
       "https://accounts.spotify.com/authorize?" +
       new URLSearchParams({
-        client_id: SPOTIFY_CLIENT_ID,
+        client_id: env.SPOTIFY_CLIENT_ID,
         response_type: "code",
-        redirect_uri: `${APP_BASE_URL}/api/signin`,
+        redirect_uri: `${env.APP_BASE_URL}/api/signin`,
         scope: "playlist-read-private playlist-modify-private",
       }).toString();
 

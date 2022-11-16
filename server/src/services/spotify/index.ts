@@ -32,6 +32,7 @@ import { pairByKey, partitionMerge, toPromise } from "../../lib/observable";
 
 import { DatabaseService } from "../database";
 import invariant from "tiny-invariant";
+import { EnvService } from "../env";
 
 function assembleTracks(
   tracks$: Observable<ResponseOf<typeof tracksRequest>[number]>,
@@ -58,7 +59,10 @@ function assembleTracks(
   );
 }
 
-export const SpotifyService = (databaseService: DatabaseService) => {
+export const SpotifyService = (
+  env: EnvService,
+  databaseService: DatabaseService
+) => {
   async function getValidToken(uid: string): Promise<string> {
     const now = Math.floor(new Date().getTime() / 1000);
     const authDoc = await databaseService.getAuthDoc(uid);
@@ -67,6 +71,8 @@ export const SpotifyService = (databaseService: DatabaseService) => {
     if (authDoc.expiresAt <= now) {
       const refreshed = await runRequest(tokenRefreshRequest, {
         refreshToken: authDoc.refreshToken,
+        clientId: env.SPOTIFY_CLIENT_ID,
+        clientSecret: env.SPOTIFY_CLIENT_SECRET,
       });
       await databaseService.updateAuthDoc(uid, {
         accessToken: refreshed.accessToken,
@@ -83,7 +89,12 @@ export const SpotifyService = (databaseService: DatabaseService) => {
   async function signIn(code: string): Promise<string> {
     const { accessToken, refreshToken, expiresIn } = await runRequest(
       tokenRequest,
-      { code }
+      {
+        code,
+        appBaseUrl: env.APP_BASE_URL,
+        clientId: env.SPOTIFY_CLIENT_ID,
+        clientSecret: env.SPOTIFY_CLIENT_SECRET,
+      }
     );
     const user = await runRequest(meRequest, { accessToken });
     const now = Math.floor(new Date().getTime() / 1000);

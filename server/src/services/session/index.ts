@@ -1,12 +1,15 @@
 import { DatabaseService } from "../../services/database";
 import MongoStore from "connect-mongo";
-import { SESSION_SECRET } from "../../env";
 import session from "express-session";
+import { EnvService } from "../env";
 
-export const SessionService = (databaseService: DatabaseService) => {
+export const SessionService = (
+  env: EnvService,
+  databaseService: DatabaseService
+) => {
   return {
     middleware: session({
-      secret: SESSION_SECRET,
+      secret: env.SESSION_SECRET,
       cookie: {},
       store: MongoStore.create({
         clientPromise: databaseService.getClient(),

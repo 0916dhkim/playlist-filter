@@ -1,13 +1,13 @@
 import { AudioFeaturesCache, IAudioFeaturesCache } from "./AudioFeaturesCache";
-import { CACHE_LIFESPAN, MONGO_URI } from "../../env";
 import { ISpotifyAuth, SpotifyAuth } from "./SpotifyAuth";
 
 import { Profile } from "../../models";
 import mongoose from "mongoose";
+import { EnvService } from "../env";
 
-export const DatabaseService = () => {
+export const DatabaseService = (env: EnvService) => {
   const client$ = mongoose
-    .connect(MONGO_URI, { serverSelectionTimeoutMS: 1000 })
+    .connect(env.MONGO_URI, { serverSelectionTimeoutMS: 1000 })
     .then(({ connection }) => connection.getClient())
     .catch(() => {
       throw new Error(`Failed to connect MongoDB! Check your MONGO_URI`);
@@ -45,7 +45,8 @@ export const DatabaseService = () => {
       const audioFeaturesDoc = await AudioFeaturesCache.findOneAndUpdate(
         { _id: trackId },
         {
-          expiresAt: CACHE_LIFESPAN + Math.floor(new Date().getTime() / 1000),
+          expiresAt:
+            env.CACHE_LIFESPAN + Math.floor(new Date().getTime() / 1000),
           audioFeatures: data,
         },
         {
