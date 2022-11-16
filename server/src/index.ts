@@ -1,6 +1,6 @@
+import { App } from "./app";
 import { PORT } from "./env";
-import app from "./app";
 
-app.listen(PORT, () => {
+App().listen(PORT, () => {
   console.log(`API server listening to ${PORT}...`);
 });

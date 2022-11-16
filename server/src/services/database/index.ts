@@ -14,7 +14,7 @@ export const DatabaseService = () => {
     });
 
   return {
-    client$,
+    getClient: () => client$,
     getAuthDoc: async (uid: string) => {
       const authDoc = await SpotifyAuth.findById(uid);
       return authDoc?.toObject();
