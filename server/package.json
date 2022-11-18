@@ -2,7 +2,8 @@
   "name": "@spotify-filter/server",
   "scripts": {
     "dev": "nodemon src/index.ts",
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "test": "jest"
   },
   "private": true,
   "dependencies": {

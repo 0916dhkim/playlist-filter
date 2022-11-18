@@ -26,3 +26,8 @@ dist-ssr
 # dotenv files
 .env
 .env.local
+
+# Cypress
+cypress/downloads
+cypress/screenshots
+cypress/videos

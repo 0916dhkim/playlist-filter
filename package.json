@@ -10,6 +10,7 @@
     "server:dev": "pnpm --filter @spotify-filter/server dev",
     "server:start": "pnpm --filter @spotify-filter/server start",
     "build": "pnpm run --recursive build",
+    "test": "pnpm run --recursive test",
     "deploy": "firebase deploy"
   },
   "devDependencies": {
