@@ -40,3 +40,10 @@ Cypress.Commands.add("mount", mount);
 
 // Example use:
 // cy.mount(<MyComponent />)
+
+// Start MSW
+import { worker } from "../../src/mockHandlers";
+worker.start();
+beforeEach(() => {
+  worker.resetHandlers();
+});
