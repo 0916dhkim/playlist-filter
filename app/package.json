@@ -9,7 +9,7 @@
     "typecheck:watch": "tsc --watch",
     "build": "pnpm typecheck && vite build",
     "test": "cypress run --component",
-    "argos:upload": "argos upload screenshots"
+    "argos:upload": "argos upload cypress/screenshots"
   },
   "dependencies": {
     "@tanstack/react-query": "^4.0.10",
