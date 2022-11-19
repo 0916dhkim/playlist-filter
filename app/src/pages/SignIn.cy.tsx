@@ -22,3 +22,22 @@ it("default", () => {
   );
   cy.argosScreenshot(Cypress.currentTest.title);
 });
+
+it("dark", () => {
+  worker.use(
+    rest.get("/api/profile", (req, res, ctx) => {
+      return res(ctx.status(403));
+    })
+  );
+
+  mount(
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <div className="dark">
+          <SignIn />
+        </div>
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
+  cy.argosScreenshot(Cypress.currentTest.title);
+});

@@ -112,13 +112,11 @@ globalStyle("html", {
   background: vars.palette.slate100,
   color: vars.palette.slate900,
   fontFamily: vars.font.brand,
+});
 
-  "@media": {
-    "(prefers-color-scheme: dark)": {
-      background: vars.palette.zinc800,
-      color: vars.palette.zinc100,
-    },
-  },
+globalStyle(".dark", {
+  background: vars.palette.zinc800,
+  color: vars.palette.zinc100,
 });
 
 globalStyle("a", {

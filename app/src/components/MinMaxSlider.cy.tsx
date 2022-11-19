@@ -20,6 +20,26 @@ it("0-1", function () {
   cy.argosScreenshot(Cypress.currentTest.title);
 });
 
+it("dark 0-1", function () {
+  const sliderMin = 0;
+  const sliderMax = 1;
+  const minInputAtom = atom(sliderMin);
+  const maxInputAtom = atom(sliderMax);
+
+  mount(
+    <div className="dark">
+      <MinMaxSlider
+        sliderMin={sliderMin}
+        sliderMax={sliderMax}
+        minInputAtom={minInputAtom}
+        maxInputAtom={maxInputAtom}
+      />
+    </div>
+  );
+
+  cy.argosScreenshot(Cypress.currentTest.title);
+});
+
 it("30-120", function () {
   const sliderMin = 30;
   const sliderMax = 120;
