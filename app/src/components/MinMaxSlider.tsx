@@ -1,8 +1,9 @@
 import * as classes from "./MinMaxSlider.css";
 
-import { CSSProperties, ReactElement, useCallback } from "react";
+import { ReactElement, useCallback } from "react";
 import { PrimitiveAtom, useAtom } from "jotai";
 import { assignInlineVars } from "@vanilla-extract/dynamic";
+import { sprinkles } from "../sprinkles.css";
 
 type MinMaxSliderProps = {
   sliderMin: number;
@@ -55,7 +56,6 @@ export default function MinMaxSlider({
 
       <div className={classes.slider}>
         <div className={classes.sliderTrack} />
-        <div className={classes.sliderRange} />
         <div
           className={classes.sliderRange}
           style={assignInlineVars({
@@ -63,8 +63,17 @@ export default function MinMaxSlider({
             [classes.maxPercent]: getPercent(maxVal).toString(),
           })}
         />
-        <div className={classes.sliderLeftValue}>{minVal}</div>
-        <div className={classes.sliderRightValue}>{maxVal}</div>
+      </div>
+      <div
+        className={sprinkles({
+          marginTop: "lg",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+        })}
+      >
+        <span>{minVal}</span>
+        <span>{maxVal}</span>
       </div>
     </div>
   );
