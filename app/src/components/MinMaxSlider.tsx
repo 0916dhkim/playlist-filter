@@ -1,7 +1,9 @@
-import "./MinMaxSlider.css";
+import * as classes from "./MinMaxSlider.css";
 
-import { CSSProperties, ReactElement, useCallback } from "react";
+import { ReactElement, useCallback } from "react";
 import { PrimitiveAtom, useAtom } from "jotai";
+import { assignInlineVars } from "@vanilla-extract/dynamic";
+import { sprinkles } from "../sprinkles.css";
 
 type MinMaxSliderProps = {
   sliderMin: number;
@@ -26,7 +28,7 @@ export default function MinMaxSlider({
   );
 
   return (
-    <div className="container">
+    <div className={classes.container}>
       <input
         type="range"
         min={sliderMin}
@@ -37,7 +39,7 @@ export default function MinMaxSlider({
           const value = Math.min(Number(event.target.value), maxVal);
           setMinVal(value);
         }}
-        className="thumb thumb--left"
+        className={classes.thumbLeft}
       />
       <input
         type="range"
@@ -49,23 +51,29 @@ export default function MinMaxSlider({
           const value = Math.max(Number(event.target.value), minVal);
           setMaxVal(value);
         }}
-        className="thumb thumb--right"
+        className={classes.thumbRight}
       />
 
-      <div className="slider">
-        <div className="slider__track" />
-        <div className="slider__range" />
+      <div className={classes.slider}>
+        <div className={classes.sliderTrack} />
         <div
-          className="slider__range"
-          style={
-            {
-              "--min-percent": getPercent(minVal),
-              "--max-percent": getPercent(maxVal),
-            } as CSSProperties
-          }
+          className={classes.sliderRange}
+          style={assignInlineVars({
+            [classes.minPercent]: getPercent(minVal).toString(),
+            [classes.maxPercent]: getPercent(maxVal).toString(),
+          })}
         />
-        <div className="slider__left-value">{minVal}</div>
-        <div className="slider__right-value">{maxVal}</div>
+      </div>
+      <div
+        className={sprinkles({
+          marginTop: "lg",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+        })}
+      >
+        <span>{minVal}</span>
+        <span>{maxVal}</span>
       </div>
     </div>
   );

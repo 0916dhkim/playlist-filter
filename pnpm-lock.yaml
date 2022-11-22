@@ -21,6 +21,7 @@ importers:
       '@types/react-dom': ^18.0.6
       '@vanilla-extract/css': ^1.7.2
       '@vanilla-extract/css-utils': ^0.1.2
+      '@vanilla-extract/dynamic': ^2.0.3
       '@vanilla-extract/sprinkles': ^1.4.1
       '@vanilla-extract/vite-plugin': ^3.3.0
       '@vitejs/plugin-react': ^2.0.0
@@ -43,6 +44,7 @@ importers:
       '@tanstack/react-query': 4.15.1_biqbaboplfbrettd7655fr4n2y
       '@vanilla-extract/css': 1.9.1
       '@vanilla-extract/css-utils': 0.1.2
+      '@vanilla-extract/dynamic': 2.0.3
       '@vanilla-extract/sprinkles': 1.5.0_@vanilla-extract+css@1.9.1
       '@vanilla-extract/vite-plugin': 3.6.1_vite@3.1.8
       classnames: 2.3.2
@@ -2743,6 +2745,12 @@ packages:
       deepmerge: 4.2.2
       media-query-parser: 2.0.2
       outdent: 0.8.0
+    dev: false
+
+  /@vanilla-extract/dynamic/2.0.3:
+    resolution: {integrity: sha512-Rglfw2gXAYiBzAQ4jgUG7rBgE2c88e/zcG27ZVoIqMHVq56wf2C1katGMm1yFMNBgzqM7oBNYzz4YOMzznydkg==}
+    dependencies:
+      '@vanilla-extract/private': 1.0.3
     dev: false
 
   /@vanilla-extract/integration/6.0.0:
