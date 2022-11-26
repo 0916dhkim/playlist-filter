@@ -27,7 +27,11 @@ export default function Playlists({ onSelect }: PlaylistsProps): ReactElement {
     >
       {result.data
         ? result.data.map((playlist) => (
-            <span key={playlist.id} onClick={() => onSelect(playlist.id)}>
+            <span
+              key={playlist.id}
+              data-testid="playlists-item-name"
+              onClick={() => onSelect(playlist.id)}
+            >
               {playlist.name}
             </span>
           ))
