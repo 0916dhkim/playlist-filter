@@ -5,6 +5,7 @@ import {
   SignInHandler,
   SignOutHandler,
   SpotifyLoginUrlHandler,
+  SpotifyTokenErrorHandler,
 } from "./handlers/auth";
 import {
   ExportPlaylistHandler,
@@ -33,6 +34,7 @@ export function App(service: ServiceProvider) {
   api.get("/playlists/:id", PlaylistDetailHandler(service("spotify")));
   api.get("/playlists/:id/tracks", PlaylistTracksHandler(service("spotify")));
   api.post("/playlists/:id/export", ExportPlaylistHandler(service("spotify")));
+  api.use(SpotifyTokenErrorHandler());
 
   return app;
 }

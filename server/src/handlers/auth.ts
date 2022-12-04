@@ -1,6 +1,6 @@
-import { RequestHandler } from "express";
+import { ErrorRequestHandler, RequestHandler } from "express";
 import { EnvService } from "../services/env";
-import { SpotifyService } from "../services/spotify";
+import { SpotifyService, SpotifyTokenError } from "../services/spotify";
 
 export const SpotifyLoginUrlHandler =
   (env: EnvService): RequestHandler =>
@@ -49,3 +49,22 @@ export const SignOutHandler = (): RequestHandler => async (req, res, next) => {
     }
   });
 };
+
+export const SpotifyTokenErrorHandler =
+  (): ErrorRequestHandler => (err, req, res, next) => {
+    if (err instanceof SpotifyTokenError) {
+      // Only handle SpotifyTokenError.
+      // If a valid Spotify token cannot be obtained,
+      // terminate the session.
+      req.session.destroy((err) => {
+        if (err == null) {
+          res.status(403).send("Invalid Spotify auth.");
+        } else {
+          next(err);
+        }
+      });
+    } else {
+      // Pass other errors down.
+      next(err);
+    }
+  };
