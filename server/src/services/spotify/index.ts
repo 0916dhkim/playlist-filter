@@ -59,6 +59,15 @@ function assembleTracks(
   );
 }
 
+/**
+ * Error: Valid Spotify token cannot be obtained.
+ */
+export class SpotifyTokenError extends Error {
+  constructor(message: string) {
+    super(message);
+  }
+}
+
 export const SpotifyService = (
   env: EnvService,
   databaseService: DatabaseService
@@ -69,16 +78,21 @@ export const SpotifyService = (
     invariant(authDoc); // TODO: Handle this case.
 
     if (authDoc.expiresAt <= now) {
-      const refreshed = await runRequest(tokenRefreshRequest, {
-        refreshToken: authDoc.refreshToken,
-        clientId: env.SPOTIFY_CLIENT_ID,
-        clientSecret: env.SPOTIFY_CLIENT_SECRET,
-      });
-      await databaseService.updateAuthDoc(uid, {
-        accessToken: refreshed.accessToken,
-        expiresAt: now + refreshed.expiresIn,
-      });
-      return refreshed.accessToken;
+      try {
+        const refreshed = await runRequest(tokenRefreshRequest, {
+          refreshToken: authDoc.refreshToken,
+          clientId: env.SPOTIFY_CLIENT_ID,
+          clientSecret: env.SPOTIFY_CLIENT_SECRET,
+        });
+        await databaseService.updateAuthDoc(uid, {
+          accessToken: refreshed.accessToken,
+          expiresAt: now + refreshed.expiresIn,
+        });
+        return refreshed.accessToken;
+      } catch (err) {
+        console.error(err);
+        throw new SpotifyTokenError("Failed to refresh Spotify token.");
+      }
     }
     return authDoc.accessToken;
   }
