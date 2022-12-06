@@ -1,7 +1,6 @@
-import { calc } from "@vanilla-extract/css-utils";
 import { sprinkles } from "../../sprinkles.css";
 import { style } from "@vanilla-extract/css";
-import { vars } from "../../theme.css";
+import { grid, vars } from "../../theme.css";
 
 export const container = sprinkles({
   display: "flex",
@@ -11,11 +10,11 @@ export const container = sprinkles({
 });
 
 export const thumbnail = style({
-  width: calc.multiply(64, vars.grid),
+  width: grid(64),
 });
 
 export const thumbnailPlaceholder = style({
-  width: calc.multiply(64, vars.grid),
-  height: calc.multiply(64, vars.grid),
+  width: grid(64),
+  height: grid(64),
   background: vars.palette.zinc600,
 });

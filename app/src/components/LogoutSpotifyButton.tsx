@@ -18,7 +18,10 @@ export default function LogoutSpotifyButton(): ReactElement {
   return (
     <Button
       variant="primary"
-      className={sprinkles({ minWidth: { mobile: "1/2", tablet: "1/4" } })}
+      className={sprinkles({
+        width: "full",
+        maxWidth: { mobile: "sm", tablet: "md" },
+      })}
       onClick={logout}
     >
       Logout

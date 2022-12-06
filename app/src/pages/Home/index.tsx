@@ -8,6 +8,7 @@ import Playlists from "./Playlists";
 import { ReactElement } from "react";
 import { sprinkles } from "../../sprinkles.css";
 import { twoColumns } from "./index.css";
+import SpotifyAttribution from "./SpotifyAttribution";
 
 /**
  * The main playlist editing page.
@@ -53,6 +54,7 @@ export default function Home(): ReactElement {
             gap: "xl",
           })}
         >
+          <SpotifyAttribution />
           <PlaylistDetails playlistId={state.selectedPlaylistId} />
           <EditorForm
             playlistId={state.selectedPlaylistId}
