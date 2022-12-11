@@ -3,6 +3,7 @@ import {
   Playlist,
   Track,
   filterByAudioFeatureRanges,
+  PlaylistDetails,
 } from "../../models";
 import {
   Observable,
@@ -33,6 +34,18 @@ import { pairByKey, partitionMerge, toPromise } from "../../lib/observable";
 import { DatabaseService } from "../database";
 import invariant from "tiny-invariant";
 import { EnvService } from "../env";
+
+function assemblePlaylistDetails(
+  playlistDetail: ResponseOf<typeof playlistRequest>
+): PlaylistDetails {
+  return {
+    id: playlistDetail.id,
+    name: playlistDetail.name,
+    images: playlistDetail.images,
+    description: playlistDetail.description,
+    externalUrls: playlistDetail.external_urls,
+  };
+}
 
 function assembleTracks(
   tracks$: Observable<ResponseOf<typeof tracksRequest>[number]>,
@@ -139,10 +152,11 @@ export const SpotifyService = (
     accessToken$: Promise<string>,
     playlistId: string
   ): Promise<Playlist> {
-    return runRequest(playlistRequest, {
+    const response = await runRequest(playlistRequest, {
       accessToken: await accessToken$,
       playlistId,
     });
+    return assemblePlaylistDetails(response);
   }
 
   function getAudioFeatures(

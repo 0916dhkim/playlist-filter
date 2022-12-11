@@ -141,6 +141,9 @@ export const playlistRequest = buildSpotifyApiRequest({
         url: z.string(),
       })
     ),
+    external_urls: z.object({
+      spotify: z.string(),
+    }),
   }).parse,
 });
 

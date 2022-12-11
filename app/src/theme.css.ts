@@ -121,6 +121,7 @@ globalStyle(".dark", {
 globalStyle("a", {
   color: "inherit",
   fontWeight: "bold",
+  textDecoration: "none",
 });
 
 globalStyle("h1", {

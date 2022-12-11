@@ -106,6 +106,9 @@ export const getPlaylistDetails = Query(
               url: z.string(),
             })
           ),
+          externalUrls: z.object({
+            spotify: z.string(),
+          }),
         }),
       })
       .parse(await response.json());
