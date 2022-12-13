@@ -1,10 +1,10 @@
 # Playlist Filter
 
-A web app for tailoring your Spotify playlists to your taste.
+A web app for tailoring your music playlists to your taste.
 
-Give it a try! [spotify-filter-a4435.web.app](https://spotify-filter-a4435.web.app/)
+Give it a try! [playlistfilter.dannyk.dev](https://playlistfilter.dannyk.dev/)
 
-https://user-images.githubusercontent.com/8978815/196199891-21a78f3b-a8bb-4fea-8d92-23bfa3ba7e5f.mp4
+https://user-images.githubusercontent.com/8978815/207225212-4273c101-c447-4652-8f75-f536aee06135.mp4
 
 #### Contribution
 
