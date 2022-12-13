@@ -36,7 +36,7 @@ export default function SignIn(): ReactElement {
       })}
     >
       <h2>
-        <i>🖭</i> Spotify Filter <i>🎶</i>
+        <i>🖭</i> Playlist Filter <i>🎶</i>
       </h2>
       <Button
         variant="primary"
