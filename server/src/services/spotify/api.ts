@@ -166,9 +166,24 @@ export const tracksRequest = buildSpotifyApiRequest({
             name: z.string(),
             duration_ms: z.number(),
             preview_url: z.nullable(z.string()),
+            external_urls: z.object({
+              spotify: z.string(),
+            }),
+            artists: z.array(
+              z.object({
+                id: z.string(),
+                name: z.string(),
+                external_urls: z.object({
+                  spotify: z.string(),
+                }),
+              })
+            ),
             album: z.object({
               id: z.string(),
               name: z.string(),
+              external_urls: z.object({
+                spotify: z.string(),
+              }),
               images: z.array(
                 z.object({
                   url: z.string(),
