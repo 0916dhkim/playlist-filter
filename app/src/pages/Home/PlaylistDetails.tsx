@@ -32,7 +32,7 @@ export default function PlaylistDetails({
           fontSize: "h1",
         })}
       >
-        {result.data?.name}
+        <a href={result.data?.externalUrls.spotify}>{result.data?.name}</a>
       </h1>
     </div>
   );

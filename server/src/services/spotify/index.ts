@@ -3,6 +3,7 @@ import {
   Playlist,
   Track,
   filterByAudioFeatureRanges,
+  PlaylistDetails,
 } from "../../models";
 import {
   Observable,
@@ -34,6 +35,18 @@ import { DatabaseService } from "../database";
 import invariant from "tiny-invariant";
 import { EnvService } from "../env";
 
+function assemblePlaylistDetails(
+  playlistDetail: ResponseOf<typeof playlistRequest>
+): PlaylistDetails {
+  return {
+    id: playlistDetail.id,
+    name: playlistDetail.name,
+    images: playlistDetail.images,
+    description: playlistDetail.description,
+    externalUrls: playlistDetail.external_urls,
+  };
+}
+
 function assembleTracks(
   tracks$: Observable<ResponseOf<typeof tracksRequest>[number]>,
   audioFeatures$: Observable<ResponseOf<typeof audioFeaturesRequest>[number]>
@@ -45,7 +58,18 @@ function assembleTracks(
       name: track.name,
       durationMs: track.duration_ms,
       previewUrl: track.preview_url,
-      album: track.album,
+      externalUrls: track.external_urls,
+      artists: track.artists.map((artist) => ({
+        id: artist.id,
+        name: artist.name,
+        externalUrls: artist.external_urls,
+      })),
+      album: {
+        id: track.album.id,
+        name: track.album.name,
+        externalUrls: track.album.external_urls,
+        images: track.album.images,
+      },
       accousticness: audioFeature.accousticness,
       danceability: audioFeature.danceability,
       energy: audioFeature.energy,
@@ -139,10 +163,11 @@ export const SpotifyService = (
     accessToken$: Promise<string>,
     playlistId: string
   ): Promise<Playlist> {
-    return runRequest(playlistRequest, {
+    const response = await runRequest(playlistRequest, {
       accessToken: await accessToken$,
       playlistId,
     });
+    return assemblePlaylistDetails(response);
   }
 
   function getAudioFeatures(

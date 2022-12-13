@@ -5,6 +5,7 @@ import { ReactElement } from "react";
 import { getTracks } from "../../../api/queries";
 import { list } from "./Tracks.css";
 import { useQuery } from "@tanstack/react-query";
+import TrackItem from "./TrackItem";
 
 type TracksProps = {
   playlistId: string;
@@ -21,7 +22,7 @@ export default function Tracks({
     <div className={list}>
       {result.data
         ? result.data.tracks.map((track, index) => (
-            <span key={`${index}-${track.id}`}>{track.name}</span>
+            <TrackItem key={`${index}-${track.id}`} track={track} />
           ))
         : null}
     </div>

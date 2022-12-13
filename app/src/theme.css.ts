@@ -2,9 +2,9 @@ import "./reset.css";
 import colors from "tailwindcss/colors";
 import { createGlobalTheme, globalStyle } from "@vanilla-extract/css";
 
-const grid = 4;
-const px = (value: string | number) => `${value}px`;
-const rem = (value: string | number) => `${value}rem`;
+export const px = (value: string | number) => `${value}px`;
+export const rem = (value: string | number) => `${value}rem`;
+export const grid = (value: number) => rem(value / 4);
 
 const tailwindPalette = {
   white: colors.white,
@@ -84,24 +84,23 @@ export const vars = createGlobalTheme(":root", {
     h5: rem(1.25),
     h6: rem(1),
   },
-  grid: px(grid),
   spacing: {
     none: "0",
-    xs: px(1 * grid),
-    sm: px(2 * grid),
-    md: px(3 * grid),
-    lg: px(5 * grid),
-    xl: px(8 * grid),
-    xxl: px(12 * grid),
-    xxxl: px(24 * grid),
+    xs: grid(1),
+    sm: grid(2),
+    md: grid(3),
+    lg: grid(5),
+    xl: grid(8),
+    xxl: grid(12),
+    xxxl: grid(24),
   },
   palette: tailwindPalette,
   border: {
     radius: {
       none: px(0),
-      sm: px(2 * grid),
-      md: px(4 * grid),
-      lg: px(7 * grid),
+      sm: grid(2),
+      md: grid(4),
+      lg: grid(7),
       full: px(9999),
       circle: "50%",
     },
@@ -122,6 +121,7 @@ globalStyle(".dark", {
 globalStyle("a", {
   color: "inherit",
   fontWeight: "bold",
+  textDecoration: "none",
 });
 
 globalStyle("h1", {

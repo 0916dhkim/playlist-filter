@@ -1,4 +1,4 @@
-# Spotify Filter
+# Playlist Filter
 
 A web app for tailoring your Spotify playlists to your taste.
 

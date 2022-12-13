@@ -106,6 +106,9 @@ export const getPlaylistDetails = Query(
               url: z.string(),
             })
           ),
+          externalUrls: z.object({
+            spotify: z.string(),
+          }),
         }),
       })
       .parse(await response.json());
@@ -143,9 +146,24 @@ export const getTracks = Query(
             name: z.string(),
             durationMs: z.number(),
             previewUrl: z.string().nullish(),
+            externalUrls: z.object({
+              spotify: z.string(),
+            }),
+            artists: z.array(
+              z.object({
+                id: z.string(),
+                name: z.string(),
+                externalUrls: z.object({
+                  spotify: z.string(),
+                }),
+              })
+            ),
             album: z.object({
               id: z.string(),
               name: z.string(),
+              externalUrls: z.object({
+                spotify: z.string(),
+              }),
               images: z.array(
                 z.object({
                   url: z.string(),

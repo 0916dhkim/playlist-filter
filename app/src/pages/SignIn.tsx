@@ -36,11 +36,14 @@ export default function SignIn(): ReactElement {
       })}
     >
       <h2>
-        <i>🖭</i> Spotify Filter <i>🎶</i>
+        <i>🖭</i> Playlist Filter <i>🎶</i>
       </h2>
       <Button
         variant="primary"
-        className={sprinkles({ minWidth: { mobile: "1/2", tablet: "1/4" } })}
+        className={sprinkles({
+          width: "full",
+          maxWidth: { mobile: "xs", tablet: "md" },
+        })}
         onClick={handleSignIn}
       >
         Sign in with Spotify

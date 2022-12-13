@@ -15,6 +15,9 @@ export type PlaylistDetails = {
   images: {
     url: string;
   }[];
+  externalUrls: {
+    spotify: string;
+  };
 };
 
 export type Track = {
@@ -22,9 +25,22 @@ export type Track = {
   name: string;
   durationMs: number;
   previewUrl?: string | null | undefined;
+  externalUrls: {
+    spotify: string;
+  };
+  artists: {
+    id: string;
+    name: string;
+    externalUrls: {
+      spotify: string;
+    };
+  }[];
   album: {
     id: string;
     name: string;
+    externalUrls: {
+      spotify: string;
+    };
     images: {
       url: string;
       width: number;
